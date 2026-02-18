@@ -1,0 +1,104 @@
+---
+import {useTranslations} from '../i18n/components';
+
+interface Props {
+    locale?: string;
+}
+
+const {locale = ''} = Astro.props;
+const t = useTranslations(locale);
+
+const sources = [
+    {label: 'ChatGPT', y: 18},
+    {label: 'Claude', y: 72},
+    {label: 'Gemini', y: 126},
+    {label: 'Copilot', y: 180},
+    {label: '...', y: 234},
+];
+
+const destinations = [
+    {label: t.anyAiAssistant, y: 18},
+    {label: t.localLlm, y: 72},
+    {label: t.customTools, y: 126},
+    {label: t.backupArchive, y: 180},
+    {label: '...', y: 234},
+];
+---
+<style>
+    .solution-diagram-wrapper {
+        width: 100%;
+        max-width: 900px;
+        margin: 1.5rem auto;
+    }
+
+    .solution-diagram-wrapper svg {
+        width: 100%;
+        height: auto;
+    }
+
+    .solution-diagram-wrapper svg text {
+        font-family: var(--pam-font-svg);
+    }
+
+    .sd-card-bg { fill: var(--pam-card-bg); }
+    .sd-card-stroke { stroke: var(--pam-card-border); }
+    .sd-text { fill: var(--pam-text); }
+    .sd-text-muted { fill: var(--pam-text-muted); }
+    .sd-hub-bg { fill: var(--pam-accent-bg); }
+    .sd-hub-stroke { stroke: var(--pam-accent); }
+    .sd-hub-text { fill: var(--pam-accent); }
+    .sd-arrow { stroke: var(--pam-arrow); fill: none; }
+    .sd-arrowhead { fill: var(--pam-arrow); }
+</style>
+
+<div class="solution-diagram-wrapper">
+    <svg viewBox="0 0 700 300" role="img"
+         aria-label={t.solutionAriaLabel}
+         xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <marker id="sd-arrow-right" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+                <path d="M0,0 L8,3 L0,6 Z" class="sd-arrowhead"/>
+            </marker>
+            <marker id="sd-arrow-left" markerWidth="8" markerHeight="6" refX="0" refY="3" orient="auto">
+                <path d="M8,0 L0,3 L8,6 Z" class="sd-arrowhead"/>
+            </marker>
+        </defs>
+
+        <!-- Left column: Sources -->
+        {sources.map(({label, y}) => (
+                <g>
+                    <rect x="20" y={y} width="140" height="40" rx="8" class="sd-card-bg sd-card-stroke"
+                          stroke-width="1"/>
+                    <text x="90" y={y + 24} text-anchor="middle"
+                          font-size="13" font-weight="500" class="sd-text">{label}</text>
+                </g>
+        ))}
+
+        <!-- Center: PAM Hub -->
+        <rect x="270" y="105" width="160" height="90" rx="12" class="sd-hub-bg sd-hub-stroke" stroke-width="2"/>
+        <text x="350" y="142" text-anchor="middle" font-size="18" font-weight="700" class="sd-hub-text">PAM</text>
+        <text x="350" y="172" text-anchor="middle" font-size="12" font-weight="400" class="sd-text-muted">{t.universalFormat}</text>
+
+        <!-- Right column: Destinations -->
+        {destinations.map(({label, y}) => (
+                <g>
+                    <rect x="540" y={y} width="140" height="40" rx="8" class="sd-card-bg sd-card-stroke"
+                          stroke-width="1"/>
+                    <text x="610" y={y + 24} text-anchor="middle"
+                          font-size="13" font-weight="500" class="sd-text">{label}</text>
+                </g>
+        ))}
+
+        <!-- Left arrows: Sources → Hub -->
+        {[38, 92, 146, 200, 254].map((cy) => (
+                <path d={`M160,${cy} C210,${cy} 220,150 270,150`} class="sd-arrow" stroke-width="1.5"
+                      marker-end="url(#sd-arrow-right)"/>
+        ))}
+
+        <!-- Right arrows: Hub → Destinations -->
+        {[38, 92, 146, 200, 254].map((cy) => (
+                <path d={`M430,150 C480,150 490,${cy} 540,${cy}`} class="sd-arrow" stroke-width="1.5"
+                      marker-end="url(#sd-arrow-right)"/>
+        ))}
+    </svg>
+</div>

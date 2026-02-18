@@ -1,0 +1,71 @@
+---
+title: What is Portable AI Memory (PAM)?
+description: An open interchange format for portable AI user memory. Export, migrate, and own your AI context across providers.
+---
+
+
+
+import SolutionDiagram from '../../components/SolutionDiagram.astro';
+import HowItWorksDiagram from '../../components/HowItWorksDiagram.astro';
+import HomepageCards from '../../components/HomepageCards.astro';
+
+PAM (Portable AI Memory) is an open standard that lets you take your AI memories with you when you switch between assistants like ChatGPT, Claude, Gemini, Copilot, or any other AI provider or tool.
+
+PAM was built on a simple belief: **your AI memories belong to you.** The preferences, skills, goals, projects, and context that AI assistants accumulate about you over time are your data — and they should be under your control, not locked inside a provider's platform.
+
+## The problem
+
+Every AI assistant learns about you over time — your job, your preferences, your projects, the way you like things done. But all of that knowledge is locked inside the tool you're using.
+
+If you switch from ChatGPT to Claude, you start from zero. If you use both, neither one knows what the other learned. And if a service shuts down or changes its terms, everything it knew about you is gone.
+
+Today, there is no way to move your AI context between providers. Each one stores your memories in its own format, invisible to you and incompatible with everything else. You can't export it, you can't inspect it, and you can't take it with you. The AI knows you — but you don't own what it knows.
+
+## The solution
+
+PAM defines a simple, open format (a JSON file) that any provider can export to and import from. Think of it like a **vCard for AI memories** — the same way vCard lets you move contacts between phone books, PAM lets you move memories between AI assistants.
+
+<SolutionDiagram/>
+
+With PAM, you can:
+
+- **Switch providers without starting over.** Move from ChatGPT to Claude and your new assistant already knows who you are.
+- **See what AI knows about you.** PAM files are plain text. Open the file, read it, edit it, delete what you don't want.
+- **Back up your AI context.** Export your memories to a file you control. Never lose years of context again when switching providers or tools.
+- **Combine knowledge from multiple assistants.** Merge memories from ChatGPT, Claude, and Gemini into a single profile.
+
+## How it works
+
+AI providers export your data in their own format. A converter transforms it into a PAM file — a standard JSON document that any compatible tool can read. You keep the file. You decide where it goes next.
+
+<HowItWorksDiagram/>
+
+## What a PAM file looks like
+
+The smallest valid PAM file — one memory entry with a content hash for integrity verification:
+
+```json
+{
+  "schema": "portable-ai-memory",
+  "schema_version": "1.0",
+  "owner": {
+    "id": "user-123"
+  },
+  "memories": [
+    {
+      "id": "mem-001",
+      "type": "skill",
+      "content": "User is a cloud infrastructure engineer",
+      "content_hash": "sha256:e1bae3ec291c99eced01fc91b4152a0cef541fccf2034fc11b3f90f4e4d79b6e",
+      "temporal": {
+        "created_at": "2025-01-15T00:00:00Z"
+      },
+      "provenance": {
+        "platform": "chatgpt"
+      }
+    }
+  ]
+}
+```
+
+<HomepageCards/>

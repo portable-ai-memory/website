@@ -1,0 +1,90 @@
+---
+title: Minimal Example
+description: The smallest valid PAM file — a minimal memory store with a single memory entry
+---
+
+
+
+import {TabItem, Tabs} from '@astrojs/starlight/components';
+
+The smallest valid PAM file — one memory entry with integrity hash:
+
+```json
+{
+  "schema": "portable-ai-memory",
+  "schema_version": "1.0",
+  "export_date": "2026-02-17T00:00:00Z",
+  "owner": {
+    "id": "user-123"
+  },
+  "memories": [
+    {
+      "id": "mem-001",
+      "type": "skill",
+      "content": "User is a cloud infrastructure engineer",
+      "content_hash": "sha256:e1bae3ec291c99eced01fc91b4152a0cef541fccf2034fc11b3f90f4e4d79b6e",
+      "temporal": {
+        "created_at": "2026-02-15T00:00:00Z"
+      },
+      "provenance": {
+        "platform": "chatgpt"
+      }
+    }
+  ]
+}
+```
+
+## Field Annotations
+
+- **`schema`** / **`schema_version`** — Identifies this as a PAM v1.0 file
+- **`export_date`** — When this export was created (ISO 8601)
+- **`owner.id`** — Unique identifier for the user
+- **`memories[].id`** — Unique identifier for this memory
+- **`memories[].type`** — Memory category (`skill` in this case)
+- **`memories[].content`** — The actual memory content as a string
+- **`memories[].content_hash`** — SHA-256 hash of the normalized content for integrity verification
+- **`memories[].temporal.created_at`** — When the memory was first created
+- **`memories[].provenance.platform`** — Which provider this memory originated from
+
+## Content Hash
+
+The `content_hash` is computed from the **normalized** content string per [spec §6](/spec/v1.0/#6-content-hash-normalization):
+
+1. Trim leading/trailing whitespace
+2. Convert to lowercase
+3. Apply Unicode NFC normalization
+4. Collapse consecutive whitespace to single spaces
+5. Compute SHA-256 hex digest
+
+For `"User is a cloud infrastructure engineer"`, after normalization (becomes `"user is a cloud infrastructure engineer"`), the hash is `sha256:e1bae3ec291c99eced01fc91b4152a0cef541fccf2034fc11b3f90f4e4d79b6e`.
+
+## Validate
+
+<Tabs syncKey="lang">
+    <TabItem label="Python">
+        ```python
+        from jsonschema import Draft202012Validator
+        import json
+
+        with open("portable-ai-memory.schema.json") as f:
+            schema = json.load(f)
+        with open("memory-store.json") as f:
+            data = json.load(f)
+        errors = list(Draft202012Validator(schema).iter_errors(data))
+        print("valid" if not errors else f"{len(errors)} errors")
+        ```
+    </TabItem>
+    <TabItem label="Node.js">
+        ```javascript
+        import Ajv2020 from "ajv/dist/2020.js";
+        import {readFileSync} from "node:fs";
+
+        const ajv = new Ajv2020({allErrors: true});
+        const schema = JSON.parse(readFileSync("portable-ai-memory.schema.json", "utf8"));
+        const data = JSON.parse(readFileSync("memory-store.json", "utf8"));
+
+        const validate = ajv.compile(schema);
+        console.log(validate(data) ? "valid" : `${validate.errors.length} errors`);
+        ```
+    </TabItem>
+</Tabs>

@@ -1,0 +1,30 @@
+{
+  "name": "pam-site",
+  "type": "module",
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "sync-schemas": "./scripts/sync-schemas.sh",
+    "generate-llms": "node ./scripts/generate-llms-txt.mjs",
+    "prebuild": "npm run sync-schemas && npm run generate-llms",
+    "dev": "npm run sync-schemas && npm run generate-llms && astro dev",
+    "start": "npm run dev",
+    "build": "astro build && node ./scripts/generate-csp-headers.mjs",
+    "preview": "astro preview",
+    "astro": "astro",
+    "prepare": "test -d .git && ./scripts/install-hooks.sh || true"
+  },
+  "dependencies": {
+    "astro": "^5.17.2",
+    "@astrojs/starlight": "^0.37.6",
+    "@astrojs/sitemap": "^3.7.0"
+  },
+  "devDependencies": {
+    "astro-icon": "^1.1.5",
+    "@iconify-json/devicon": "^1.2.58",
+    "@iconify-json/lucide": "^1.2.91",
+    "@iconify-json/simple-icons": "^1.2.71"
+  }
+}

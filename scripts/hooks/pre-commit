@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Pre-commit hook: verify schemas are in sync with content-source
+
+set -euo pipefail
+
+if [ -d "content-source/schemas" ]; then
+  ./scripts/sync-schemas.sh --check > /dev/null 2>&1 || {
+    echo "Error: schemas are out of sync with content-source."
+    echo "Run: ./scripts/sync-schemas.sh"
+    exit 1
+  }
+fi

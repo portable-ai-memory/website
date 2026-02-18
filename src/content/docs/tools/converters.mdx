@@ -1,0 +1,37 @@
+---
+title: SDK Converters
+description: Official SDKs and CLI tools for converting provider exports to PAM format
+---
+
+import SdkCards from '../../../components/SdkCards.astro';
+
+PAM SDKs convert provider-specific exports into the portable PAM format. Each SDK targets a single language and provides both a CLI and a programmatic API.
+
+<SdkCards />
+
+## What each SDK will provide
+
+### CLI
+
+```bash
+pam validate memory-store.json          # validate against PAM schemas
+pam convert conversations.json          # convert provider export (auto-detects provider)
+```
+
+### Programmatic API
+
+```python
+from portable_ai_memory import validate, convert
+```
+
+### Capabilities
+
+Each converter will:
+
+- Auto-detect the provider's export format
+- Map fields to PAM schema
+- Compute content hashes per [spec §6](/spec/v1.0/#6-content-hash-normalization) normalization
+- Output a valid, schema-compliant PAM memory store
+- Optionally generate companion conversation and embeddings files
+
+See the [Provider pages](/providers/overview/) for details on each provider's export format and field mappings.

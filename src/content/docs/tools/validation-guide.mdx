@@ -1,0 +1,221 @@
+---
+title: Validation Guide
+description: How to validate PAM files locally
+---
+
+
+
+import {TabItem, Tabs} from '@astrojs/starlight/components';
+
+## Download the schemas
+
+```bash
+# Required
+curl -O https://portable-ai-memory.org/schemas/portable-ai-memory.schema.json
+
+# Optional (for conversation and embeddings files)
+curl -O https://portable-ai-memory.org/schemas/portable-ai-memory-conversation.schema.json
+curl -O https://portable-ai-memory.org/schemas/portable-ai-memory-embeddings.schema.json
+```
+
+## Install
+
+<Tabs syncKey="lang">
+    <TabItem label="Python">
+        ```bash
+        pip install jsonschema
+        ```
+    </TabItem>
+    <TabItem label="Node.js">
+        ```bash
+        npm install ajv ajv-formats
+        ```
+
+        Requires `"type": "module"` in `package.json` or use a `.mjs` file extension.
+    </TabItem>
+</Tabs>
+
+## Validate
+
+PAM schemas use JSON Schema Draft 2020-12. Both tools below support this draft natively.
+
+### Memory store
+
+<Tabs syncKey="lang">
+    <TabItem label="Python">
+        ```python
+        from jsonschema import Draft202012Validator
+        import json
+        import sys
+
+        with open("portable-ai-memory.schema.json") as f:
+            schema = json.load(f)
+        with open("memory-store.json") as f:
+            data = json.load(f)
+        errors = sorted(
+            Draft202012Validator(schema).iter_errors(data),
+            key=lambda e: list(e.path),
+        )
+
+        if not errors:
+            print("memory-store.json valid")
+        else:
+            print("memory-store.json invalid")
+            for e in errors:
+                path = "/".join(str(p) for p in e.path) or "(root)"
+                print(f"  {path}: {e.message}")
+            sys.exit(1)
+        ```
+    </TabItem>
+    <TabItem label="Node.js">
+        ```javascript
+        import Ajv2020 from "ajv/dist/2020.js";
+        import addFormats from "ajv-formats";
+        import {readFileSync} from "node:fs";
+
+        const ajv = new Ajv2020({allErrors: true});
+        addFormats(ajv);
+        const schema = JSON.parse(readFileSync("portable-ai-memory.schema.json", "utf8"));
+        const data = JSON.parse(readFileSync("memory-store.json", "utf8"));
+
+        const validate = ajv.compile(schema);
+        if (validate(data)) {
+          console.log("memory-store.json valid");
+        } else {
+          console.log("memory-store.json invalid");
+          for (const err of validate.errors) {
+            console.log(`  ${err.instancePath || "(root)"}: ${err.message}`);
+          }
+          process.exit(1);
+        }
+        ```
+
+        :::caution[Draft 2020-12]
+        You must import from `ajv/dist/2020.js`, not the default `ajv` export. The default assumes Draft-07 and will
+        reject valid PAM files.
+        :::
+    </TabItem>
+</Tabs>
+
+### Conversation
+
+<Tabs syncKey="lang">
+    <TabItem label="Python">
+        ```python
+        from jsonschema import Draft202012Validator
+        import json
+        import sys
+
+        with open("portable-ai-memory-conversation.schema.json") as f:
+            schema = json.load(f)
+        with open("conversation.json") as f:
+            data = json.load(f)
+        errors = sorted(
+            Draft202012Validator(schema).iter_errors(data),
+            key=lambda e: list(e.path),
+        )
+
+        if not errors:
+            print("conversation.json valid")
+        else:
+            print(f"conversation.json invalid — {len(errors)} errors")
+            for e in errors:
+                path = "/".join(str(p) for p in e.path) or "(root)"
+                print(f"  {path}: {e.message}")
+            sys.exit(1)
+        ```
+    </TabItem>
+    <TabItem label="Node.js">
+        ```javascript
+        import Ajv2020 from "ajv/dist/2020.js";
+        import addFormats from "ajv-formats";
+        import {readFileSync} from "node:fs";
+
+        const ajv = new Ajv2020({allErrors: true});
+        addFormats(ajv);
+        const schema = JSON.parse(readFileSync("portable-ai-memory-conversation.schema.json", "utf8"));
+        const data = JSON.parse(readFileSync("conversation.json", "utf8"));
+
+        const validate = ajv.compile(schema);
+        if (validate(data)) {
+          console.log("conversation.json valid");
+        } else {
+          console.log(`conversation.json invalid — ${validate.errors.length} errors`);
+          for (const err of validate.errors) {
+            console.log(`  ${err.instancePath || "(root)"}: ${err.message}`);
+          }
+          process.exit(1);
+        }
+        ```
+    </TabItem>
+</Tabs>
+
+### Embeddings
+
+<Tabs syncKey="lang">
+    <TabItem label="Python">
+        ```python
+        from jsonschema import Draft202012Validator
+        import json
+        import sys
+
+        with open("portable-ai-memory-embeddings.schema.json") as f:
+            schema = json.load(f)
+        with open("embeddings.json") as f:
+            data = json.load(f)
+        errors = sorted(
+            Draft202012Validator(schema).iter_errors(data),
+            key=lambda e: list(e.path),
+        )
+
+        if not errors:
+            print("embeddings.json valid")
+        else:
+            print(f"embeddings.json invalid — {len(errors)} errors")
+            for e in errors:
+                path = "/".join(str(p) for p in e.path) or "(root)"
+                print(f"  {path}: {e.message}")
+            sys.exit(1)
+        ```
+    </TabItem>
+    <TabItem label="Node.js">
+        ```javascript
+        import Ajv2020 from "ajv/dist/2020.js";
+        import addFormats from "ajv-formats";
+        import {readFileSync} from "node:fs";
+
+        const ajv = new Ajv2020({allErrors: true});
+        addFormats(ajv);
+        const schema = JSON.parse(readFileSync("portable-ai-memory-embeddings.schema.json", "utf8"));
+        const data = JSON.parse(readFileSync("embeddings.json", "utf8"));
+
+        const validate = ajv.compile(schema);
+        if (validate(data)) {
+          console.log("embeddings.json valid");
+        } else {
+          console.log(`embeddings.json invalid — ${validate.errors.length} errors`);
+          for (const err of validate.errors) {
+            console.log(`  ${err.instancePath || "(root)"}: ${err.message}`);
+          }
+          process.exit(1);
+        }
+        ```
+    </TabItem>
+</Tabs>
+
+## Output examples
+
+Success:
+
+```
+memory-store.json valid
+```
+
+Error:
+
+```
+memory-store.json invalid
+  memories/0: must have required property 'content_hash'
+```
+
+The error output shows the JSON path to the invalid field and which rule was violated.

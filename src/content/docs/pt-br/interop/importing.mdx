@@ -1,0 +1,221 @@
+---
+title: Importação
+description: Como importar exportações de provedores para o formato PAM
+---
+
+
+
+import {TabItem, Tabs} from '@astrojs/starlight/components';
+
+Este guia cobre o processo de leitura de uma exportação de provedor e produção de um arquivo válido de memory store ou conversação PAM. Inclui heurísticas de detecção de formato, normalização de roles, normalização de timestamps e orientações sobre versionamento de importadores.
+
+## Processo geral
+
+1. **Obtenha a exportação** do seu provedor (veja [Visão Geral de Provedores](/pt-br/providers/overview/))
+2. **Detecte o formato do provedor** usando as heurísticas abaixo
+3. **Mapeie os campos** para o schema PAM (veja as páginas individuais de cada provedor para os mapeamentos de campos)
+4. **Normalize os roles** usando a tabela de referência abaixo
+5. **Normalize os timestamps** para ISO 8601 usando a referência abaixo
+6. **Compute os content hashes** conforme a normalização da [spec §6](/pt-br/spec/v1.0/#6-content-hash-normalization)
+7. **Valide** a saída contra o schema PAM
+
+## Heurísticas de detecção de formato
+
+A função a seguir detecta o formato do provedor a partir de uma estrutura JSON carregada. Note que exportações do Copilot são CSV, não JSON, e devem ser detectadas pela extensão do arquivo ou pela linha de cabeçalho antes de chamar esta função.
+
+<Tabs syncKey="lang">
+    <TabItem label="Python">
+        ```python
+        def detect_provider(data):
+            if isinstance(data, list):
+                sample = data[0] if data else {}
+                if "mapping" in sample:
+                    return "chatgpt"
+                if "chat_messages" in sample:
+                    return "claude"
+                if "header" in sample and ("details" in sample or "userInteractions" in sample):
+                    return "gemini"
+            if isinstance(data, dict):
+                if "conversations" in data and isinstance(data["conversations"], list):
+                    sample = data["conversations"][0] if data["conversations"] else {}
+                    if "conversation" in sample and "responses" in sample:
+                        return "grok"
+            return "unknown"
+        ```
+    </TabItem>
+    <TabItem label="Node.js">
+        ```javascript
+        function detectProvider(data) {
+          if (Array.isArray(data)) {
+            const sample = data[0] || {};
+            if ("mapping" in sample) return "chatgpt";
+            if ("chat_messages" in sample) return "claude";
+            if ("header" in sample && ("details" in sample || "userInteractions" in sample))
+              return "gemini";
+          }
+          if (typeof data === "object" && !Array.isArray(data)) {
+            const convs = data.conversations;
+            if (Array.isArray(convs)) {
+              const sample = convs[0] || {};
+              if ("conversation" in sample && "responses" in sample) return "grok";
+            }
+          }
+          return "unknown";
+        }
+        ```
+    </TabItem>
+</Tabs>
+
+Sinais de detecção por provedor:
+
+| Sinal | Provedor |
+|-------|----------|
+| Array JSON; primeiro elemento possui chave `mapping` | OpenAI / ChatGPT |
+| Array JSON; primeiro elemento possui chave `chat_messages` | Anthropic / Claude |
+| Array JSON; primeiro elemento possui chave `header` e `details` ou `userInteractions` | Google / Gemini |
+| Objeto JSON; `conversations[]` onde o primeiro item possui chaves `conversation` e `responses` | xAI / Grok |
+| Arquivo CSV (detectar pela extensão do arquivo ou linha de cabeçalho) | Microsoft / Copilot |
+
+## Normalização de roles
+
+Todos os valores de role do provedor devem ser normalizados para os quatro roles canônicos do PAM: `user`, `assistant`, `system`, `tool`.
+
+| Provedor | Valor do provedor | Valor normalizado PAM |
+|----------|------------------|-----------------------|
+| OpenAI | `user` | `user` |
+| OpenAI | `assistant` | `assistant` |
+| OpenAI | `system` | `system` |
+| OpenAI | `tool` | `tool` |
+| Anthropic | `human` | `user` |
+| Anthropic | `assistant` | `assistant` |
+| Google | `Request` (Takeout) | `user` |
+| Google | `Response` (Takeout) | `assistant` |
+| Microsoft | `user` (CSV) | `user` |
+| Microsoft | `AI` (CSV) | `assistant` |
+| xAI | `human` | `user` |
+| xAI | `assistant` | `assistant` |
+| xAI | `ASSISTANT` | `assistant` |
+| xAI | `grok-3` (nome do modelo como remetente) | `assistant` |
+| xAI | qualquer valor que não seja `human` | `assistant` |
+
+Para xAI / Grok, a normalização de role DEVE ser case-insensitive. Quatro valores distintos de remetente foram observados: `"human"`, `"assistant"`, `"ASSISTANT"` (maiúsculo) e nomes de modelo como `"grok-3"`. Trate qualquer valor que não seja `"human"` (case-insensitive) como `"assistant"`.
+
+## Normalização de timestamps
+
+Todos os timestamps no PAM DEVEM ser strings ISO 8601. Exportações de provedores usam diversos formatos:
+
+| Provedor | Formato de origem | Transformação |
+|----------|------------------|---------------|
+| OpenAI | Unix epoch (float, segundos) | `datetime.fromtimestamp(v, tz=UTC).isoformat()` |
+| Anthropic | ISO 8601 | direto (nenhuma transformação necessária) |
+| Google (Takeout) | ISO 8601 | direto (nenhuma transformação necessária) |
+| Microsoft (CSV) | String de data local (varia por arquivo) | parse com `dateutil.parser.parse()` |
+| xAI (nível de conversação) | ISO 8601 | direto (nenhuma transformação necessária) |
+| xAI (nível de mensagem) | BSON `{"$date":{"$numberLong":"<ms>"}}` | `datetime.fromtimestamp(int(v["$date"]["$numberLong"])/1000, tz=UTC).isoformat()` |
+
+xAI / Grok usa dois formatos de timestamp diferentes dentro do mesmo arquivo: ISO 8601 no nível de conversação e BSON no nível de mensagem. Dois parsers separados são necessários.
+
+Para OpenAI, algumas mensagens possuem `create_time: 0` ou `null`. Use o `create_time` no nível de conversação como fallback.
+
+## Computação do content hash
+
+Toda memória importada deve incluir um `content_hash`. Compute-o conforme a [spec §6](/pt-br/spec/v1.0/#6-content-hash-normalization):
+
+1. Pegue a string `content`
+2. Remova espaços em branco no início e no final
+3. Converta para minúsculas
+4. Aplique a normalização Unicode NFC
+5. Reduza espaços em branco consecutivos para um único espaço
+6. Compute o SHA-256 do resultado codificado em UTF-8
+7. Formate como `sha256:<hex_digest>`
+
+<Tabs syncKey="lang">
+    <TabItem label="Python">
+        ```python
+        import hashlib
+        import unicodedata
+
+        def compute_content_hash(content: str) -> str:
+            text = content.strip().lower()
+            text = unicodedata.normalize("NFC", text)
+            text = " ".join(text.split())
+            return f"sha256:{hashlib.sha256(text.encode('utf-8')).hexdigest()}"
+        ```
+    </TabItem>
+    <TabItem label="Node.js">
+        ```javascript
+        import {createHash} from "node:crypto";
+
+        function computeContentHash(content) {
+          let text = content.trim().toLowerCase();
+          text = text.normalize("NFC");
+          text = text.replace(/\s+/g, " ");
+          const hash = createHash("sha256").update(text, "utf8").digest("hex");
+          return `sha256:${hash}`;
+        }
+        ```
+    </TabItem>
+</Tabs>
+
+## Versionamento de importadores
+
+Formatos de exportação dos provedores mudam sem aviso prévio. Todo importador DEVE registrar sua versão e o arquivo de origem na saída PAM. Use o campo `import_metadata` no schema de conversação:
+
+```json
+{
+  "import_metadata": {
+    "importer": "pam-converter/1.0.0",
+    "importer_version": "openai-importer/2025.01",
+    "imported_at": "2026-02-15T22:00:00Z",
+    "source_file": "conversations.json",
+    "source_checksum": "sha256:abc123..."
+  }
+}
+```
+
+Quando um provedor altera seu formato de exportação:
+
+1. Crie uma nova versão do importador (ex.: `openai-importer/2026.01`)
+2. Mantenha a versão antiga do importador disponível para reprocessamento de exportações anteriores
+3. Detecte automaticamente a versão do formato quando possível, verificando diferenças na presença de campos ou na estrutura do schema
+
+## Validação
+
+Após a importação, valide sua saída contra o schema PAM:
+
+<Tabs syncKey="lang">
+    <TabItem label="Python">
+        ```python
+        from jsonschema import Draft202012Validator
+        import json
+
+        with open("portable-ai-memory.schema.json") as f:
+            schema = json.load(f)
+        with open("memory-store.json") as f:
+            data = json.load(f)
+
+        errors = list(Draft202012Validator(schema).iter_errors(data))
+        print(f"{len(errors)} validation errors")
+        ```
+    </TabItem>
+    <TabItem label="Node.js">
+        ```javascript
+        import Ajv2020 from "ajv/dist/2020.js";
+        import {readFileSync} from "node:fs";
+
+        const ajv = new Ajv2020({allErrors: true});
+        const schema = JSON.parse(readFileSync("portable-ai-memory.schema.json", "utf8"));
+        const data = JSON.parse(readFileSync("memory-store.json", "utf8"));
+
+        const validate = ajv.compile(schema);
+        if (validate(data)) {
+          console.log("memory-store.json valid");
+        } else {
+          console.log(`${validate.errors.length} validation errors`);
+          process.exit(1);
+        }
+        ```
+    </TabItem>
+</Tabs>
+
+Veja o [Guia de Validação](/pt-br/tools/validation-guide/) para instruções detalhadas.

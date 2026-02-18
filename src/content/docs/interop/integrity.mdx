@@ -1,0 +1,189 @@
+---
+title: Integrity Verification
+description: How to verify PAM file integrity using SHA-256 hashes and the normalization algorithm
+---
+
+
+
+import {TabItem, Tabs} from '@astrojs/starlight/components';
+
+PAM provides three levels of integrity verification: per-memory content hashes, file-level integrity blocks, and optional cryptographic signatures.
+
+## Per-Memory Content Hash
+
+Every memory includes a `content_hash` field containing the SHA-256 hash of its normalized content.
+
+### Verification steps
+
+1. Take the `content` field value
+2. Normalize it per [spec §6](/spec/v1.0/#6-content-hash-normalization):
+ - Trim leading/trailing whitespace
+ - Convert to lowercase
+ - Apply Unicode NFC normalization
+ - Collapse consecutive whitespace to single spaces
+3. Compute SHA-256 hex digest of the UTF-8 encoded result
+4. Compare with the stored `content_hash` (format: `sha256:<hex>`)
+
+### Example
+
+Content: `"User is a cloud infrastructure engineer"`
+
+After normalization: `"user is a cloud infrastructure engineer"`
+
+Expected hash: `sha256:e1bae3ec291c99eced01fc91b4152a0cef541fccf2034fc11b3f90f4e4d79b6e`
+
+### Implementation
+
+<Tabs syncKey="lang">
+    <TabItem label="Python">
+        ```python
+        import hashlib
+        import unicodedata
+
+        def verify_content_hash(content: str, expected_hash: str) -> bool:
+            text = content.strip().lower()
+            text = unicodedata.normalize("NFC", text)
+            text = " ".join(text.split())
+            computed = f"sha256:{hashlib.sha256(text.encode('utf-8')).hexdigest()}"
+            return computed == expected_hash
+        ```
+    </TabItem>
+    <TabItem label="Node.js">
+        ```javascript
+        import {createHash} from "node:crypto";
+
+        function verifyContentHash(content, expectedHash) {
+          let text = content.trim().toLowerCase();
+          text = text.normalize("NFC");
+          text = text.replace(/\s+/g, " ");
+          const computed = `sha256:${createHash("sha256").update(text, "utf8").digest("hex")}`;
+          return computed === expectedHash;
+        }
+        ```
+    </TabItem>
+</Tabs>
+
+## File-Level Integrity Block
+
+The optional `integrity` block verifies that the memories array has not been tampered with. The checksum covers **only the memories array**, not the entire document.
+
+### Verification steps
+
+Per [spec §15](/spec/v1.0/#15-integrity-verification):
+
+1. Extract the `memories` array from the document
+2. Sort the memory objects by `id` field, ascending
+3. Canonicalize the sorted array using RFC 8785 (JSON Canonicalization Scheme)
+4. Compute SHA-256 of the canonical UTF-8 bytes
+5. Compare with `integrity.checksum` (format: `sha256:<hex>`)
+6. Verify that `integrity.total_memories` matches the length of the `memories` array
+
+:::caution[Common mistake]
+The checksum covers the **memories array only**, not the entire document. Do not hash the whole JSON file or remove the integrity field and hash the rest — this will produce a wrong checksum.
+:::
+
+### Implementation
+
+<Tabs syncKey="lang">
+    <TabItem label="Python">
+        ```python
+        import hashlib
+        from jcs import canonicalize  # pip install jcs (RFC 8785 compliant)
+
+        def verify_integrity(pam_data: dict) -> bool:
+            integrity = pam_data.get("integrity")
+            if not integrity:
+                return True  # no integrity block, nothing to verify
+
+            memories = pam_data["memories"]
+
+            # check count
+            if integrity["total_memories"] != len(memories):
+                return False
+
+            # sort by id ascending
+            sorted_memories = sorted(memories, key=lambda m: m["id"])
+
+            # canonicalize with RFC 8785 (JCS)
+            # Note: json.dumps with sort_keys is NOT equivalent to RFC 8785.
+            canonical = canonicalize(sorted_memories)
+
+            computed = f"sha256:{hashlib.sha256(canonical).hexdigest()}"
+            return computed == integrity["checksum"]
+        ```
+    </TabItem>
+    <TabItem label="Node.js">
+        ```javascript
+        import {createHash} from "node:crypto";
+        import canonicalize from "canonicalize"; // RFC 8785
+
+        function verifyIntegrity(pamData) {
+          const integrity = pamData.integrity;
+          if (!integrity) return true;
+
+          const memories = pamData.memories;
+          if (integrity.total_memories !== memories.length) return false;
+
+          // sort by id ascending
+          const sorted = [...memories].sort((a, b) => a.id.localeCompare(b.id));
+
+          // canonicalize with RFC 8785
+          const canonical = canonicalize(sorted);
+          const hash = createHash("sha256").update(canonical, "utf8").digest("hex");
+
+          return `sha256:${hash}` === integrity.checksum;
+        }
+        ```
+
+        Install the canonicalize package: `npm install canonicalize`
+    </TabItem>
+</Tabs>
+
+## Cryptographic Signatures
+
+PAM v1.0 supports optional cryptographic signatures for authenticity verification and tamper detection via the `signature` block ([spec §18](/spec/v1.0/#18-cryptographic-signatures)).
+
+### Signature payload
+
+The signature is computed over a specific payload object, **not** the integrity checksum alone. The payload contains four fields, canonicalized with RFC 8785:
+
+```json
+{
+  "checksum": "<integrity.checksum>",
+  "export_date": "<export_date>",
+  "export_id": "<export_id>",
+  "owner_id": "<owner.id>"
+}
+```
+
+This prevents replay attacks — a valid checksum from one export cannot be reused in a different export with a different ID or date.
+
+### Supported algorithms
+
+| Algorithm | Notes |
+|-----------|-------|
+| `Ed25519` | **Recommended.** Fast, small keys, resistant to side-channel attacks |
+| `ES256` | ECDSA with P-256 curve |
+| `ES384` | ECDSA with P-384 curve |
+| `RS256` | RSA with SHA-256 |
+| `RS384` | RSA with SHA-384 |
+| `RS512` | RSA with SHA-512 |
+
+### Verification steps
+
+1. Extract the `signature` block
+2. Reconstruct the payload: `{checksum, export_date, export_id, owner_id}`
+3. Canonicalize the payload with RFC 8785
+4. Verify the signature using `signature.algorithm`, `signature.public_key`, and `signature.value` (Base64url-encoded per RFC 4648 §5)
+5. If `owner.did` is present, optionally resolve the DID document and verify that `signature.public_key` corresponds to a verification method in the document
+
+:::note
+When a `signature` block is present, `export_id` and `export_date` become required fields (enforced by the schema via `if/then`).
+:::
+
+## References
+
+- [Spec §6 — Content Hash Normalization](/spec/v1.0/#6-content-hash-normalization)
+- [Spec §15 — Integrity Verification](/spec/v1.0/#15-integrity-verification)
+- [Spec §18 — Cryptographic Signatures](/spec/v1.0/#18-cryptographic-signatures)
+- [RFC 8785 — JSON Canonicalization Scheme](https://www.rfc-editor.org/rfc/rfc8785)

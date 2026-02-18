@@ -1,0 +1,90 @@
+---
+title: Exemplo Mínimo
+description: O menor arquivo PAM válido — um memory store mínimo com uma única entrada de memória
+---
+
+
+
+import {TabItem, Tabs} from '@astrojs/starlight/components';
+
+O menor arquivo PAM válido — uma entrada de memória com hash de integridade:
+
+```json
+{
+  "schema": "portable-ai-memory",
+  "schema_version": "1.0",
+  "export_date": "2026-02-17T00:00:00Z",
+  "owner": {
+    "id": "user-123"
+  },
+  "memories": [
+    {
+      "id": "mem-001",
+      "type": "skill",
+      "content": "User is a cloud infrastructure engineer",
+      "content_hash": "sha256:e1bae3ec291c99eced01fc91b4152a0cef541fccf2034fc11b3f90f4e4d79b6e",
+      "temporal": {
+        "created_at": "2026-02-15T00:00:00Z"
+      },
+      "provenance": {
+        "platform": "chatgpt"
+      }
+    }
+  ]
+}
+```
+
+## Anotações dos Campos
+
+- **`schema`** / **`schema_version`** — Identifica este como um arquivo PAM v1.0
+- **`export_date`** — Quando esta exportação foi criada (ISO 8601)
+- **`owner.id`** — Identificador único do usuário
+- **`memories[].id`** — Identificador único desta memória
+- **`memories[].type`** — Categoria da memória (`skill` neste caso)
+- **`memories[].content`** — O conteúdo real da memória como uma string
+- **`memories[].content_hash`** — Hash SHA-256 do conteúdo normalizado para verificação de integridade
+- **`memories[].temporal.created_at`** — Quando a memória foi criada pela primeira vez
+- **`memories[].provenance.platform`** — De qual provedor esta memória se originou
+
+## Content Hash
+
+O `content_hash` é calculado a partir da string de conteúdo **normalizada** conforme a [spec seção 6](/pt-br/spec/v1.0/#6-content-hash-normalization):
+
+1. Remover espaços em branco no início e no fim
+2. Converter para minúsculas
+3. Aplicar normalização Unicode NFC
+4. Colapsar espaços em branco consecutivos em espaços simples
+5. Calcular o digest hexadecimal SHA-256
+
+Para `"User is a cloud infrastructure engineer"`, após a normalização (torna-se `"user is a cloud infrastructure engineer"`), o hash é `sha256:e1bae3ec291c99eced01fc91b4152a0cef541fccf2034fc11b3f90f4e4d79b6e`.
+
+## Validar
+
+<Tabs syncKey="lang">
+    <TabItem label="Python">
+        ```python
+        from jsonschema import Draft202012Validator
+        import json
+
+        with open("portable-ai-memory.schema.json") as f:
+            schema = json.load(f)
+        with open("memory-store.json") as f:
+            data = json.load(f)
+        errors = list(Draft202012Validator(schema).iter_errors(data))
+        print("valid" if not errors else f"{len(errors)} errors")
+        ```
+    </TabItem>
+    <TabItem label="Node.js">
+        ```javascript
+        import Ajv2020 from "ajv/dist/2020.js";
+        import {readFileSync} from "node:fs";
+
+        const ajv = new Ajv2020({allErrors: true});
+        const schema = JSON.parse(readFileSync("portable-ai-memory.schema.json", "utf8"));
+        const data = JSON.parse(readFileSync("memory-store.json", "utf8"));
+
+        const validate = ajv.compile(schema);
+        console.log(validate(data) ? "valid" : `${validate.errors.length} errors`);
+        ```
+    </TabItem>
+</Tabs>

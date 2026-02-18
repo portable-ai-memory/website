@@ -1,0 +1,190 @@
+---
+title: Exporting
+description: How to produce a valid PAM export from your system
+---
+
+
+
+import {TabItem, Tabs} from '@astrojs/starlight/components';
+
+This guide covers how to produce a valid PAM export from your own system.
+
+## Required Fields
+
+At minimum, a valid PAM export must include:
+
+- `schema`: `"portable-ai-memory"`
+- `schema_version`: `"1.0"`
+- `owner.id`: A unique identifier for the user
+- `memories`: An array with at least one memory object
+
+Each memory must include:
+
+| Field | Description |
+|-------|-------------|
+| `id` | Unique identifier (SHOULD be UUID v4) |
+| `type` | One of the [defined memory types](/schema/memory-store/#memorytype) |
+| `content` | The memory content string |
+| `content_hash` | SHA-256 hash of the [normalized content](/interop/integrity/#per-memory-content-hash) |
+| `temporal.created_at` | ISO 8601 timestamp of when the memory was created |
+| `provenance.platform` | Source platform identifier (e.g., `chatgpt`, `claude`, `gemini`) |
+
+See the [Minimal Example](/examples/minimal/) for the smallest valid PAM file.
+
+## Content Hash
+
+Compute the `content_hash` per [spec §6](/spec/v1.0/#6-content-hash-normalization):
+
+<Tabs syncKey="lang">
+    <TabItem label="Python">
+        ```python
+        import hashlib
+        import unicodedata
+
+        def compute_content_hash(content: str) -> str:
+            text = content.strip().lower()
+            text = unicodedata.normalize("NFC", text)
+            text = " ".join(text.split())
+            return f"sha256:{hashlib.sha256(text.encode('utf-8')).hexdigest()}"
+        ```
+    </TabItem>
+    <TabItem label="Node.js">
+        ```javascript
+        import {createHash} from "node:crypto";
+
+        function computeContentHash(content) {
+          let text = content.trim().toLowerCase();
+          text = text.normalize("NFC");
+          text = text.replace(/\s+/g, " ");
+          const hash = createHash("sha256").update(text, "utf8").digest("hex");
+          return `sha256:${hash}`;
+        }
+        ```
+    </TabItem>
+</Tabs>
+
+## Optional Enrichment
+
+### Relations
+
+Add semantic relationships between memories. Each relation requires `id`, `from`, `to`, `type`, and `created_at`:
+
+```json
+{
+  "relations": [
+    {
+      "id": "rel-001",
+      "from": "mem-002",
+      "to": "mem-001",
+      "type": "derived_from",
+      "confidence": 0.9,
+      "created_at": "2026-02-15T00:00:00Z"
+    }
+  ]
+}
+```
+
+Available relation types: `supports`, `contradicts`, `extends`, `supersedes`, `related_to`, `derived_from`. See [spec §13](/spec/v1.0/#13-relations).
+
+### Conversations Index
+
+Reference companion conversation files via the `conversations_index` array. Each entry uses a `storage` object to point to the external file:
+
+```json
+{
+  "conversations_index": [
+    {
+      "id": "conv-001",
+      "platform": "claude",
+      "title": "Infrastructure discussion",
+      "temporal": {
+        "created_at": "2024-06-01T10:00:00Z"
+      },
+      "message_count": 42,
+      "derived_memories": ["mem-001", "mem-002"],
+      "storage": {
+        "type": "file",
+        "ref": "conversations/conv-001.json",
+        "format": "json"
+      }
+    }
+  ]
+}
+```
+
+The companion conversation files must conform to the [Conversations Schema](/schema/conversations/).
+
+### Integrity Block
+
+Generate a file-level integrity block for tamper detection. The checksum covers **only the memories array**, not the entire document:
+
+1. Take the `memories` array
+2. Sort memory objects by `id` field, ascending
+3. Canonicalize the sorted array using RFC 8785 (JSON Canonicalization Scheme)
+4. Compute SHA-256 of the canonical UTF-8 bytes
+5. Add the `integrity` block:
+
+```json
+{
+  "integrity": {
+    "canonicalization": "RFC8785",
+    "checksum": "sha256:<hex_digest>",
+    "total_memories": 5
+  }
+}
+```
+
+See [spec §15](/spec/v1.0/#15-integrity-verification) and the [Integrity Verification](/interop/integrity/) guide for details.
+
+### Signature
+
+For exports shared between systems, add a cryptographic signature for authenticity verification. See the [Integrity Verification](/interop/integrity/#cryptographic-signatures) guide for the signature payload format and supported algorithms.
+
+## Validation
+
+Always validate your export before distribution:
+
+<Tabs syncKey="lang">
+    <TabItem label="Python">
+        ```python
+        from jsonschema import Draft202012Validator
+        import json
+        import sys
+
+        with open("portable-ai-memory.schema.json") as f:
+            schema = json.load(f)
+        with open("memory-store.json") as f:
+            data = json.load(f)
+
+        errors = list(Draft202012Validator(schema).iter_errors(data))
+        if not errors:
+            print("memory-store.json valid")
+        else:
+            for e in errors:
+                print(e.message)
+            sys.exit(1)
+        ```
+    </TabItem>
+    <TabItem label="Node.js">
+        ```javascript
+        import Ajv2020 from "ajv/dist/2020.js";
+        import {readFileSync} from "node:fs";
+
+        const ajv = new Ajv2020({allErrors: true});
+        const schema = JSON.parse(readFileSync("portable-ai-memory.schema.json", "utf8"));
+        const data = JSON.parse(readFileSync("memory-store.json", "utf8"));
+
+        const validate = ajv.compile(schema);
+        if (validate(data)) {
+          console.log("memory-store.json valid");
+        } else {
+          for (const err of validate.errors) {
+            console.log(err.message);
+          }
+          process.exit(1);
+        }
+        ```
+    </TabItem>
+</Tabs>
+
+See the [Validation Guide](/tools/validation-guide/) for detailed instructions including Python alternatives.

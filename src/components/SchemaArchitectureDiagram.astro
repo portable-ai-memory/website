@@ -1,0 +1,100 @@
+---
+import {useTranslations} from '../i18n/components';
+
+interface Props {
+    locale?: string;
+}
+
+const {locale = ''} = Astro.props;
+const t = useTranslations(locale);
+---
+<style>
+    .schema-arch-wrapper {
+        width: 100%;
+        max-width: 700px;
+        margin: 1.5rem auto;
+    }
+
+    .schema-arch-wrapper svg {
+        width: 100%;
+        height: auto;
+    }
+
+    .schema-arch-wrapper svg text {
+        font-family: var(--pam-font-svg);
+    }
+
+    .sa-card-bg { fill: var(--pam-card-bg); }
+    .sa-card-stroke { stroke: var(--pam-card-border); }
+    .sa-text { fill: var(--pam-text); }
+    .sa-text-muted { fill: var(--pam-text-muted); }
+    .sa-focal-bg { fill: var(--pam-accent-bg); }
+    .sa-focal-stroke { stroke: var(--pam-accent); }
+    .sa-focal-text { fill: var(--pam-accent); }
+    .sa-arrow { stroke: var(--pam-arrow); fill: none; }
+    .sa-arrowhead { fill: var(--pam-arrow); }
+    .sa-label { fill: var(--pam-text-muted); }
+    .sa-badge { fill: var(--pam-accent); }
+    .sa-badge-text { fill: var(--pam-badge-text-inverse); }
+    .sa-optional-badge { fill: var(--pam-text-muted); }
+    .sa-mono { font-family: ui-monospace, SFMono-Regular, monospace !important; }
+</style>
+
+<div class="schema-arch-wrapper">
+    <svg viewBox="0 0 680 340" role="img"
+         aria-label={t.schemaAriaLabel}
+         xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <marker id="sa-arrow-end" markerWidth="10" markerHeight="7" refX="5" refY="3.5" orient="auto-start-reverse">
+                <path d="M0,0 L10,3.5 L0,7 Z" class="sa-arrowhead"/>
+            </marker>
+        </defs>
+
+        <!-- Memory Store (central, focal) -->
+        <rect x="140" y="20" width="400" height="110" rx="10" class="sa-focal-bg sa-focal-stroke" stroke-width="1.5"/>
+
+        <!-- Required badge -->
+        <rect x="460" y="30" width="68" height="20" rx="10" class="sa-badge"/>
+        <text x="494" y="44" text-anchor="middle" font-size="10" font-weight="600" class="sa-badge-text">{t.required}</text>
+
+        <!-- Memory Store title -->
+        <text x="340" y="52" text-anchor="middle" font-size="16" font-weight="700" class="sa-focal-text">{t.memoryStore}</text>
+        <text x="340" y="70" text-anchor="middle" font-size="11" class="sa-text-muted sa-mono">portable-ai-memory.schema.json</text>
+
+        <!-- Memory Store contents -->
+        <text x="340" y="95" text-anchor="middle" font-size="11" class="sa-text-muted">memories · owner · relations · conversations_index · integrity</text>
+        <text x="340" y="115" text-anchor="middle" font-size="11" class="sa-text-muted">confidence · access · metadata · signature</text>
+
+        <!-- Arrow: Memory Store → Conversations -->
+        <path d="M 260,130 L 260,155 Q 260,165 250,165 L 200,165 Q 190,165 190,175 L 190,225"
+              class="sa-arrow" stroke-width="1.5" stroke-dasharray="6,4" marker-end="url(#sa-arrow-end)"/>
+        <text x="155" y="185" font-size="9" class="sa-label sa-mono">conversations_index</text>
+
+        <!-- Arrow: Memory Store → Embeddings -->
+        <path d="M 420,130 L 420,155 Q 420,165 430,165 L 490,165 Q 500,165 500,175 L 500,225"
+              class="sa-arrow" stroke-width="1.5" stroke-dasharray="6,4" marker-end="url(#sa-arrow-end)"/>
+        <text x="510" y="185" font-size="9" class="sa-label sa-mono">embedding_ref</text>
+
+        <!-- Conversations (left companion) -->
+        <rect x="40" y="230" width="310" height="95" rx="10" class="sa-card-bg sa-card-stroke" stroke-width="1"/>
+
+        <!-- Optional badge -->
+        <rect x="272" y="239" width="64" height="20" rx="10" class="sa-optional-badge"/>
+        <text x="304" y="253" text-anchor="middle" font-size="10" font-weight="600" class="sa-badge-text">{t.optional}</text>
+
+        <text x="195" y="262" text-anchor="middle" font-size="14" font-weight="600" class="sa-text">{t.conversations}</text>
+        <text x="195" y="280" text-anchor="middle" font-size="10" class="sa-text-muted sa-mono">...-conversation.schema.json</text>
+        <text x="195" y="305" text-anchor="middle" font-size="11" class="sa-text-muted">messages · participants · provider · DAG</text>
+
+        <!-- Embeddings (right companion) -->
+        <rect x="370" y="230" width="270" height="95" rx="10" class="sa-card-bg sa-card-stroke" stroke-width="1"/>
+
+        <!-- Optional badge -->
+        <rect x="562" y="239" width="64" height="20" rx="10" class="sa-optional-badge"/>
+        <text x="594" y="253" text-anchor="middle" font-size="10" font-weight="600" class="sa-badge-text">{t.optional}</text>
+
+        <text x="505" y="262" text-anchor="middle" font-size="14" font-weight="600" class="sa-text">{t.embeddings}</text>
+        <text x="505" y="280" text-anchor="middle" font-size="10" class="sa-text-muted sa-mono">...-embeddings.schema.json</text>
+        <text x="505" y="305" text-anchor="middle" font-size="11" class="sa-text-muted">vectors · model · dimensions</text>
+    </svg>
+</div>

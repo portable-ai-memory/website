@@ -1,0 +1,114 @@
+---
+import {useTranslations} from '../i18n/components';
+
+interface Props {
+    locale?: string;
+}
+
+const {locale = ''} = Astro.props;
+const t = useTranslations(locale);
+---
+<style>
+    .howitworks-diagram-wrapper {
+        width: 100%;
+        max-width: 500px;
+        margin: 1.5rem auto;
+    }
+
+    .howitworks-diagram-wrapper svg {
+        width: 100%;
+        height: auto;
+    }
+
+    .howitworks-diagram-wrapper svg text {
+        font-family: var(--pam-font-svg);
+    }
+
+    .hw-card-bg { fill: var(--pam-card-bg); }
+    .hw-card-stroke { stroke: var(--pam-card-border); }
+    .hw-text { fill: var(--pam-text); }
+    .hw-text-muted { fill: var(--pam-text-muted); }
+    .hw-focal-bg { fill: var(--pam-accent-bg); }
+    .hw-focal-stroke { stroke: var(--pam-accent); }
+    .hw-accent { fill: var(--pam-accent); }
+    .hw-icon { fill: none; stroke: var(--pam-text-muted); }
+    .hw-icon-accent { fill: none; stroke: var(--pam-accent); }
+    .hw-arrow { stroke: var(--pam-text-muted); fill: none; }
+    .hw-arrowhead { fill: var(--pam-text-muted); }
+</style>
+
+<div class="howitworks-diagram-wrapper">
+    <svg viewBox="0 0 400 380" role="img"
+         aria-label={t.howItWorksAriaLabel}
+         xmlns="http://www.w3.org/2000/svg">
+        <!-- Step 1: Export -->
+        <g>
+            <rect x="20" y="10" width="360" height="64" rx="10" class="hw-card-bg hw-card-stroke" stroke-width="1"/>
+            <g transform="translate(36, 22)">
+                <path d="M12,0 L12,22 M6,16 L12,22 L18,16" class="hw-icon" stroke-width="2" stroke-linecap="round"
+                      stroke-linejoin="round"/>
+                <path d="M0,28 L0,34 C0,37 3,40 6,40 L18,40 C21,40 24,37 24,34 L24,28" class="hw-icon" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+            </g>
+            <text x="80" y="36" font-size="14" font-weight="600" class="hw-text">{t.step1Title}</text>
+            <text x="80" y="54" font-size="12" font-weight="400" class="hw-text-muted">{t.step1Desc}</text>
+        </g>
+
+        <!-- Arrow 1→2 -->
+        <line x1="200" y1="78" x2="200" y2="96" class="hw-arrow" stroke-width="1.5"/>
+        <polygon points="194,96 200,106 206,96" class="hw-arrowhead"/>
+
+        <!-- Step 2: Convert -->
+        <g>
+            <rect x="20" y="106" width="360" height="64" rx="10" class="hw-card-bg hw-card-stroke" stroke-width="1"/>
+            <g transform="translate(36, 120)">
+                <!-- Top arrow: right-pointing -->
+                <line x1="2" y1="7" x2="22" y2="7" class="hw-icon" stroke-width="2" stroke-linecap="round"/>
+                <path d="M17,3 L23,7 L17,11" class="hw-icon" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <!-- Bottom arrow: left-pointing -->
+                <line x1="22" y1="17" x2="2" y2="17" class="hw-icon" stroke-width="2" stroke-linecap="round"/>
+                <path d="M7,13 L1,17 L7,21" class="hw-icon" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </g>
+            <text x="80" y="132" font-size="14" font-weight="600" class="hw-text">{t.step2Title}</text>
+            <text x="80" y="150" font-size="12" font-weight="400" class="hw-text-muted">{t.step2Desc}</text>
+        </g>
+
+        <!-- Arrow 2→3 -->
+        <line x1="200" y1="174" x2="200" y2="192" class="hw-arrow" stroke-width="1.5"/>
+        <polygon points="194,192 200,202 206,192" class="hw-arrowhead"/>
+
+        <!-- Step 3: PAM File (focal) -->
+        <g>
+            <rect x="20" y="202" width="360" height="72" rx="10" class="hw-focal-bg hw-focal-stroke" stroke-width="2"/>
+            <g transform="translate(36, 214)">
+                <path d="M4,0 L18,0 L28,10 L28,44 C28,46 26,48 24,48 L4,48 C2,48 0,46 0,44 L0,4 C0,2 2,0 4,0 Z"
+                      class="hw-icon-accent" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M18,0 L18,10 L28,10" class="hw-icon-accent" stroke-width="2" stroke-linejoin="round"/>
+                <!-- Code lines inside document -->
+                <line x1="7" y1="20" x2="21" y2="20" class="hw-icon-accent" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="7" y1="26" x2="17" y2="26" class="hw-icon-accent" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="7" y1="32" x2="21" y2="32" class="hw-icon-accent" stroke-width="1.5" stroke-linecap="round"/>
+                <line x1="7" y1="38" x2="14" y2="38" class="hw-icon-accent" stroke-width="1.5" stroke-linecap="round"/>
+            </g>
+            <text x="80" y="234" font-size="14" font-weight="600" class="hw-accent">{t.step3Title}</text>
+            <text x="80" y="254" font-size="12" font-weight="400" class="hw-text-muted">{t.step3Desc}</text>
+        </g>
+
+        <!-- Arrow 3→4 -->
+        <line x1="200" y1="278" x2="200" y2="296" class="hw-arrow" stroke-width="1.5"/>
+        <polygon points="194,296 200,306 206,296" class="hw-arrowhead"/>
+
+        <!-- Step 4: Import -->
+        <g>
+            <rect x="20" y="306" width="360" height="64" rx="10" class="hw-card-bg hw-card-stroke" stroke-width="1"/>
+            <g transform="translate(36, 318)">
+                <path d="M12,24 L12,2 M6,8 L12,2 L18,8" class="hw-icon" stroke-width="2" stroke-linecap="round"
+                      stroke-linejoin="round"/>
+                <path d="M0,28 L0,34 C0,37 3,40 6,40 L18,40 C21,40 24,37 24,34 L24,28" class="hw-icon" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+            </g>
+            <text x="80" y="340" font-size="14" font-weight="600" class="hw-text">{t.step4Title}</text>
+            <text x="80" y="358" font-size="12" font-weight="400" class="hw-text-muted">{t.step4Desc}</text>
+        </g>
+    </svg>
+</div>

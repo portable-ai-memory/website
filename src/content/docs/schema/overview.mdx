@@ -1,0 +1,38 @@
+---
+title: Schema Overview
+description: The three-schema architecture of PAM
+---
+
+
+
+import SchemaArchitectureDiagram from '../../../components/SchemaArchitectureDiagram.astro';
+
+PAM uses three JSON Schema (Draft 2020-12) files to define its data model:
+
+| Schema        | File                                                                                                  | Status       |
+|---------------|-------------------------------------------------------------------------------------------------------|--------------|
+| Memory Store  | [`portable-ai-memory.schema.json`](/schemas/portable-ai-memory.schema.json)                           | **Required** |
+| Conversations | [`portable-ai-memory-conversation.schema.json`](/schemas/portable-ai-memory-conversation.schema.json) | Optional     |
+| Embeddings    | [`portable-ai-memory-embeddings.schema.json`](/schemas/portable-ai-memory-embeddings.schema.json)     | Optional     |
+
+## Architecture
+
+<SchemaArchitectureDiagram/>
+
+The **Memory Store** is the root document. It contains the `memories` array, owner information, metadata, relations, and
+an optional integrity block. Every valid PAM export must include a memory store file.
+
+**Conversations** are companion files containing normalized chat history imported from providers. The memory store can
+reference conversations via the `conversations_index` field, linking memories to the conversations they originated from.
+
+**Embeddings** are optional companion files containing vector representations of memory content. They are separated by
+design to keep the core memory store lightweight — systems that don't need semantic search can ignore them entirely.
+
+All three schemas comply with JSON Schema Draft 2020-12 and can be validated using any compliant validator (e.g.,
+`ajv-cli` with `--spec=draft2020`).
+
+## Download
+
+- [portable-ai-memory.schema.json](/schemas/portable-ai-memory.schema.json)
+- [portable-ai-memory-conversation.schema.json](/schemas/portable-ai-memory-conversation.schema.json)
+- [portable-ai-memory-embeddings.schema.json](/schemas/portable-ai-memory-embeddings.schema.json)

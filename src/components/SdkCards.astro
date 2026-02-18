@@ -1,0 +1,165 @@
+---
+import { Icon } from 'astro-icon/components';
+import {useTranslations} from '../i18n/components';
+
+interface Props {
+    locale?: string;
+}
+
+const {locale = ''} = Astro.props;
+const t = useTranslations(locale);
+
+const sdks = [
+    {
+        language: 'Python',
+        status: t.comingSoon,
+        statusKey: 'soon',
+        icon: 'devicon:python',
+        description: t.pythonDesc,
+    },
+    {
+        language: 'TypeScript',
+        status: t.comingSoon,
+        statusKey: 'soon',
+        icon: 'devicon:typescript',
+        description: t.typescriptDesc,
+    },
+    {
+        language: 'Go',
+        status: t.planned,
+        statusKey: 'planned',
+        icon: 'devicon:go',
+        description: t.goDesc,
+    },
+    {
+        language: 'Rust',
+        status: t.planned,
+        statusKey: 'planned',
+        icon: 'devicon:rust',
+        description: t.rustDesc,
+    },
+    {
+        language: 'Java',
+        status: t.planned,
+        statusKey: 'planned',
+        icon: 'devicon:java',
+        description: t.javaDesc,
+    },
+    {
+        language: 'C#',
+        status: t.planned,
+        statusKey: 'planned',
+        icon: 'devicon:csharp',
+        description: t.csharpDesc,
+    },
+];
+---
+
+<style>
+    .sdk-cards {
+        --sc-bg: var(--pam-card-bg);
+        --sc-border: var(--pam-card-border);
+        --sc-border-hover: var(--pam-accent);
+        --sc-text: var(--pam-text);
+        --sc-muted: var(--pam-text-muted);
+        --sc-badge-soon-bg: var(--pam-badge-bg);
+        --sc-badge-soon-text: var(--pam-badge-text);
+        --sc-badge-planned-bg: rgba(156, 163, 175, 0.12);
+        --sc-badge-planned-text: var(--pam-text-muted);
+    }
+
+    .sdk-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-auto-rows: 1fr;
+        gap: 1rem;
+        margin: 1.5rem 0;
+    }
+
+    @media (max-width: 768px) {
+        .sdk-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 480px) {
+        .sdk-grid { grid-template-columns: 1fr; }
+    }
+
+    .sdk-card {
+        display: flex;
+        flex-direction: column;
+        background: var(--sc-bg);
+        border: 1px solid var(--sc-border);
+        border-radius: 8px;
+        padding: 1.25rem;
+        margin-top: 0;
+        transition: border-color 0.2s ease;
+    }
+
+    .sdk-card:hover {
+        border-color: var(--sc-border-hover);
+    }
+
+    .sdk-header {
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .sdk-header [data-icon] {
+        flex-shrink: 0;
+        width: 20px;
+        height: 20px;
+    }
+
+    .sdk-name {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--sc-text);
+        line-height: 1.3;
+    }
+
+    .sdk-desc {
+        font-size: 0.875rem;
+        color: var(--sc-muted);
+        line-height: 1.5;
+        margin: 0;
+        flex: 1;
+    }
+
+    .sdk-badge {
+        display: inline-block;
+        font-size: 0.6875rem;
+        font-weight: 500;
+        border-radius: 9999px;
+        padding: 0.125rem 0.625rem;
+        margin-top: 0.75rem;
+        width: fit-content;
+        line-height: 1.6;
+    }
+
+    .sdk-badge[data-status="soon"] {
+        background: var(--sc-badge-soon-bg);
+        color: var(--sc-badge-soon-text);
+    }
+
+    .sdk-badge[data-status="planned"] {
+        background: var(--sc-badge-planned-bg);
+        color: var(--sc-badge-planned-text);
+    }
+</style>
+
+<div class="sdk-cards">
+    <div class="sdk-grid">
+        {sdks.map(({ language, status, statusKey, icon: iconName, description }) => (
+                <div class="sdk-card">
+                    <div class="sdk-header">
+                        <Icon name={iconName} />
+                        <span class="sdk-name">{language}</span>
+                    </div>
+                    <p class="sdk-desc">{description}</p>
+                    <span class="sdk-badge" data-status={statusKey}>{status}</span>
+                </div>
+        ))}
+    </div>
+</div>

@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Pre-push hook: prevent direct push to main/master
+
+set -euo pipefail
+
+PROTECTED_BRANCHES="^(main|master)$"
+CURRENT_BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null || true)
+
+if [[ "$CURRENT_BRANCH" =~ $PROTECTED_BRANCHES ]]; then
+  echo "Error: direct push to '$CURRENT_BRANCH' is not allowed."
+  echo "Create a feature branch and open a Pull Request instead."
+  exit 1
+fi

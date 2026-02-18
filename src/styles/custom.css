@@ -1,0 +1,88 @@
+/* PAM teal accent: #2b7a78 / #3aafa9 (lighter variant) */
+
+:root {
+    --sl-color-accent-low: #1a3d3c;
+    --sl-color-accent: #2b7a78;
+    --sl-color-accent-high: #b8e6e4;
+    --sl-color-text-accent: #2b7a78;
+
+    /* Shared component tokens (light) */
+    --pam-card-bg: #f4f5f7;
+    --pam-card-border: #d1d5db;
+    --pam-text: #1f2328;
+    --pam-text-muted: #6b7280;
+    --pam-accent: #2b7a78;
+    --pam-accent-bg: rgba(43, 122, 120, 0.08);
+    --pam-arrow: #9ca3af;
+    --pam-badge-bg: #dbeafe;
+    --pam-badge-text: #1d4ed8;
+    --pam-badge-text-inverse: #ffffff;
+    --pam-font-svg: system-ui, -apple-system, sans-serif;
+}
+
+:root[data-theme="dark"] {
+    --sl-color-accent-low: #133130;
+    --sl-color-accent: #3aafa9;
+    --sl-color-accent-high: #c8f0ee;
+    --sl-color-text-accent: #3aafa9;
+
+    /* Shared component tokens (dark) */
+    --pam-card-bg: #23262d;
+    --pam-card-border: #404552;
+    --pam-text: #e6edf3;
+    --pam-text-muted: #9ca3af;
+    --pam-accent: #3aafa9;
+    --pam-accent-bg: rgba(43, 122, 120, 0.12);
+    --pam-arrow: #6b7280;
+    --pam-badge-bg: rgba(59, 130, 246, 0.15);
+    --pam-badge-text: #60a5fa;
+    --pam-badge-text-inverse: #ffffff;
+}
+
+
+/* Widen language selector to fit "Português (Brasil)" */
+starlight-lang-select label {
+    --sl-select-width: 14em !important;
+}
+
+/* Let content fill available space between sidebars */
+.sl-container {
+    max-width: none;
+}
+
+.main-pane {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.right-sidebar-container {
+    flex-shrink: 0;
+    width: var(--sl-sidebar-width);
+}
+
+/* Constrain and center layout on wide screens */
+@media (min-width: 1800px) {
+    .page {
+        max-width: 1800px;
+        margin-inline: auto;
+    }
+
+    header.header {
+        max-width: 1800px;
+        left: 0;
+        right: 0;
+        margin-inline: auto;
+    }
+
+    /* 50% on fixed elements = half of viewport WITHOUT scrollbar,
+       matching margin-inline:auto behavior — no 100vw mismatch */
+    .sidebar-pane {
+        left: calc(50% - 900px) !important;
+    }
+
+    .right-sidebar {
+        right: calc(50% - 900px) !important;
+        width: auto !important;
+        left: auto !important;
+    }
+}

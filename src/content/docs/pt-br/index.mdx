@@ -1,0 +1,71 @@
+---
+title: O que é Portable AI Memory (PAM)?
+description: Um padrão universal para memória portátil de IA. Exporte, migre e seja dono do seu contexto de IA entre provedores.
+---
+
+
+
+import SolutionDiagram from '../../../components/SolutionDiagram.astro';
+import HowItWorksDiagram from '../../../components/HowItWorksDiagram.astro';
+import HomepageCards from '../../../components/HomepageCards.astro';
+
+PAM (Portable AI Memory) é um padrão aberto que permite levar suas memórias de IA com você ao trocar de assistente — como ChatGPT, Claude, Gemini, Copilot ou qualquer outro provedor ou ferramenta de IA.
+
+O PAM foi construído com uma crença simples: **suas memórias de IA pertencem a você.** As preferências, habilidades, objetivos, projetos e contexto que os assistentes de IA acumulam sobre você ao longo do tempo são seus dados — e devem estar sob seu controle, não trancados dentro da plataforma de um provedor.
+
+## O problema
+
+Todo assistente de IA aprende sobre você ao longo do tempo — seu trabalho, suas preferências, seus projetos, a forma como você gosta que as coisas sejam feitas. Mas todo esse conhecimento fica trancado dentro da ferramenta que você usa.
+
+Se você trocar do ChatGPT para o Claude, começa do zero. Se usar ambos, nenhum sabe o que o outro aprendeu. E se um serviço encerrar ou mudar seus termos, tudo que ele sabia sobre você desaparece.
+
+Hoje, não há como mover seu contexto de IA entre provedores. Cada um armazena suas memórias em seu próprio formato, invisível para você e incompatível com todo o resto. Você não pode exportar, não pode inspecionar e não pode levar consigo. A IA te conhece — mas você não é dono do que ela sabe.
+
+## A solução
+
+O PAM define um formato simples e aberto (um arquivo JSON) que qualquer provedor pode exportar e importar. Pense nele como um **vCard para memórias de IA** — da mesma forma que o vCard permite mover contatos entre agendas, o PAM permite mover memórias entre assistentes de IA.
+
+<SolutionDiagram locale="pt-br"/>
+
+Com o PAM, você pode:
+
+- **Trocar de provedor sem recomeçar.** Migre do ChatGPT para o Claude e seu novo assistente já sabe quem você é.
+- **Ver o que a IA sabe sobre você.** Arquivos PAM são texto puro. Abra o arquivo, leia, edite, apague o que não quiser.
+- **Fazer backup do seu contexto de IA.** Exporte suas memórias para um arquivo que você controla. Nunca mais perca anos de contexto ao trocar de provedor ou ferramenta.
+- **Combinar conhecimento de múltiplos assistentes.** Junte memórias do ChatGPT, Claude e Gemini em um único perfil.
+
+## Como funciona
+
+Provedores de IA exportam seus dados em formato próprio. Um conversor transforma isso em um arquivo PAM — um documento JSON padrão que qualquer ferramenta compatível pode ler. Você mantém o arquivo. Você decide para onde ele vai.
+
+<HowItWorksDiagram locale="pt-br"/>
+
+## Como é um arquivo PAM
+
+O menor arquivo PAM válido — uma entrada de memória com hash de conteúdo para verificação de integridade:
+
+```json
+{
+  "schema": "portable-ai-memory",
+  "schema_version": "1.0",
+  "owner": {
+    "id": "user-123"
+  },
+  "memories": [
+    {
+      "id": "mem-001",
+      "type": "skill",
+      "content": "User is a cloud infrastructure engineer",
+      "content_hash": "sha256:e1bae3ec291c99eced01fc91b4152a0cef541fccf2034fc11b3f90f4e4d79b6e",
+      "temporal": {
+        "created_at": "2025-01-15T00:00:00Z"
+      },
+      "provenance": {
+        "platform": "chatgpt"
+      }
+    }
+  ]
+}
+```
+
+<HomepageCards locale="pt-br"/>
