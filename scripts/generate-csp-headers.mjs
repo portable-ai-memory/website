@@ -45,7 +45,7 @@ console.log(`Found ${hashes.length} unique inline script hash(es)`);
 const src = readFileSync(HEADERS_SRC, 'utf8');
 const csp = src.replace(
     /script-src\s+'[^;]+/,
-    `script-src 'self' ${hashes.join(' ')}`
+    `script-src 'self' 'wasm-unsafe-eval' ${hashes.join(' ')}`
 );
 writeFileSync(HEADERS_OUT, csp);
 console.log('Generated: dist/_headers with CSP script hashes');
