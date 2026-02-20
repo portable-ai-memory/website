@@ -12,15 +12,17 @@ const t = useTranslations(locale);
 const sdks = [
     {
         language: 'Python',
-        status: t.comingSoon,
-        statusKey: 'soon',
+        status: t.available,
+        statusKey: 'available',
         icon: 'devicon:python',
         description: t.pythonDesc,
+        href: 'https://github.com/portable-ai-memory/python-sdk',
     },
     {
         language: 'TypeScript',
         status: t.comingSoon,
         statusKey: 'soon',
+        href: undefined,
         icon: 'devicon:typescript',
         description: t.typescriptDesc,
     },
@@ -147,19 +149,33 @@ const sdks = [
         background: var(--sc-badge-planned-bg);
         color: var(--sc-badge-planned-text);
     }
+
+    .sdk-badge[data-status="available"] {
+        background: rgba(34, 197, 94, 0.15);
+        color: rgb(34, 197, 94);
+    }
+
+    a.sdk-card {
+        text-decoration: none;
+        color: inherit;
+    }
 </style>
 
 <div class="sdk-cards">
     <div class="sdk-grid">
-        {sdks.map(({ language, status, statusKey, icon: iconName, description }) => (
-                <div class="sdk-card">
+        {sdks.map(({ language, status, statusKey, icon: iconName, description, href }) => {
+            const Tag = href ? 'a' : 'div';
+            const linkProps = href ? { href, target: '_blank', rel: 'noopener noreferrer' } : {};
+            return (
+                <Tag class="sdk-card" {...linkProps}>
                     <div class="sdk-header">
                         <Icon name={iconName} />
                         <span class="sdk-name">{language}</span>
                     </div>
                     <p class="sdk-desc">{description}</p>
                     <span class="sdk-badge" data-status={statusKey}>{status}</span>
-                </div>
-        ))}
+                </Tag>
+            );
+        })}
     </div>
 </div>

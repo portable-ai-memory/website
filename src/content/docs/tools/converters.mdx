@@ -9,29 +9,105 @@ PAM SDKs convert provider-specific exports into the portable PAM format. Each SD
 
 <SdkCards />
 
-## What each SDK will provide
+## Python SDK
 
-### CLI
+The official [Python SDK](https://github.com/portable-ai-memory/python-sdk) is the first reference implementation. It supports converting, validating, inspecting, and building PAM documents.
+
+### Install
 
 ```bash
-pam validate memory-store.json          # validate against PAM schemas
-pam convert conversations.json          # convert provider export (auto-detects provider)
+pip install portable-ai-memory        # core SDK (models, I/O, validation, converters)
+pip install 'portable-ai-memory[cli]' # + CLI tool (pam command)
 ```
 
-### Programmatic API
+### Convert via CLI
+
+```bash
+# Convert a provider export to a PAM bundle (auto-detects provider)
+pam convert ~/chatgpt-export/ -o ./pam-bundle/ --owner-id user-123
+
+# Force a specific provider
+pam convert export.json -o ./pam-bundle/ --provider claude
+
+# Validate the result
+pam validate ./pam-bundle/
+
+# Inspect the output
+pam inspect ./pam-bundle/memory-store.json
+```
+
+### Convert programmatically
+
+The SDK auto-detects the provider format and converts conversations, memories, and metadata into PAM documents.
 
 ```python
-from portable_ai_memory import validate, convert
+import json
+from pathlib import Path
+
+from portable_ai_memory.converters import detect_provider
+from portable_ai_memory import ProviderNotDetectedError
+
+try:
+    converter = detect_provider("conversations.json")
+    data = json.loads(Path("conversations.json").read_text())
+    conversations = converter.convert_conversations(
+        data, owner_id="user-123",
+    )
+except ProviderNotDetectedError as e:
+    print(f"Unknown format: {e}")
 ```
 
-### Capabilities
+### Supported providers
 
-Each converter will:
+| Provider | Source format |
+|---|---|
+| OpenAI (ChatGPT) | `conversations.json` |
+| Anthropic (Claude) | `conversations.json` + `memories.json` |
+| Google (Gemini) | Takeout JSON or HTML |
+| xAI (Grok) | `prod-grok-backend.json` |
+| Microsoft (Copilot) | CSV exports |
 
-- Auto-detect the provider's export format
-- Map fields to PAM schema
-- Compute content hashes per [spec §6](/spec/v1.0/#6-content-hash-normalization) normalization
-- Output a valid, schema-compliant PAM memory store
-- Optionally generate companion conversation and embeddings files
+To list registered converters:
+
+```python
+from portable_ai_memory.converters import list_converters
+
+print(list_converters())  # ['chatgpt', 'claude', 'gemini', 'grok', 'copilot']
+```
 
 See the [Provider pages](/providers/overview/) for details on each provider's export format and field mappings.
+
+### Build from scratch
+
+`MemoryObject.create()` auto-fills `content_hash`, `temporal`, and `provenance` metadata.
+
+```python
+from portable_ai_memory import MemoryStore, MemoryObject, Owner, save
+
+store = MemoryStore(
+    schema_version="1.0",
+    owner=Owner(id="user-123"),
+    memories=[
+        MemoryObject.create(
+            id="mem-001",
+            type="preference",
+            content="User prefers dark mode.",
+            platform="my-app",
+        )
+    ],
+)
+save(store, "memory-store.json")
+
+# Convenience lookups
+mem = store.get_memory_by_id("mem-001")
+prefs = store.get_memories_by_type("preference")
+```
+
+### What each converter does
+
+- Auto-detects the provider's export format
+- Maps fields to PAM schema
+- Computes content hashes per [spec §6](/spec/v1.0/#6-content-hash-normalization) normalization
+- Outputs valid, schema-compliant PAM documents
+- Generates companion conversation files with full message history
+- Copies attachments when present in the source export

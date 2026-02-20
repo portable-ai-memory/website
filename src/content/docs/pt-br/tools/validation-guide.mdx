@@ -1,13 +1,100 @@
 ---
 title: Guia de Validação
-description: Como validar arquivos PAM localmente
+description: Como validar arquivos PAM usando o SDK oficial ou ferramentas manuais
 ---
 
 
 
 import {TabItem, Tabs} from '@astrojs/starlight/components';
 
-## Baixar os schemas
+## Usando o SDK PAM (recomendado)
+
+O [SDK oficial Python](https://github.com/portable-ai-memory/python-sdk) é a forma recomendada de validar arquivos PAM. Ele realiza validação profunda além da conformidade de schema.
+
+### Instalação
+
+```bash
+pip install 'portable-ai-memory[cli]'
+```
+
+### CLI
+
+```bash
+# Validar um arquivo PAM individual (schema + verificações profundas)
+pam validate memory-store.json
+
+# Validar um diretório bundle PAM inteiro
+pam validate ./my-pam-bundle/
+
+# Validação apenas de schema (pular verificações profundas)
+pam validate memory-store.json --no-deep
+```
+
+### API programática
+
+```python
+from portable_ai_memory import load, validate_memory_store
+from portable_ai_memory import PAMSchemaError, PAMValidationError
+
+try:
+    store = load("memory-store.json")
+except FileNotFoundError:
+    print("Arquivo não encontrado")
+except PAMSchemaError as e:
+    print(f"Não é um arquivo PAM válido: {e}")
+except PAMValidationError as e:
+    print(f"Validação de schema falhou: {e}")
+else:
+    result = validate_memory_store(store)
+
+    if result.is_valid:
+        print(f"Válido — {len(store.memories)} memórias")
+    else:
+        for issue in result.errors:
+            print(issue)
+    for issue in result.warnings:
+        print(issue)
+```
+
+### O que o SDK valida
+
+O SDK vai além da conformidade de schema. Quando você executa `pam validate` (ou chama `validate_memory_store()`), ele verifica:
+
+- **Content hashes** — Recalcula o `content_hash` de cada memória e compara com o valor declarado. Se o conteúdo foi modificado após a geração do hash, a validação falha.
+- **Bloco de integridade** — Verifica que `total_memories` corresponde à contagem real e que o checksum agregado está correto.
+- **Referências cruzadas** — Garante que os campos `from`/`to` das relações, `conversation_ref`, `superseded_by` e `derived_memories` apontam para objetos que realmente existem no documento.
+- **Ordenação temporal** — Verifica que `created_at` ≤ `updated_at` e `valid_from` ≤ `valid_until`. Também sinaliza casos como `last_reinforced` anterior a `created_at`.
+- **Unicidade de IDs** — Sem IDs duplicados entre memórias, relações ou entradas do índice de conversas.
+- **Regras de tipo custom** — `type='custom'` exige um campo `custom_type` (e vice-versa).
+- **Consistência de status** — Uma memória com status `superseded` deve ter `superseded_by` definido, e vice-versa.
+- **DAG de conversas** — Para arquivos de conversa, verifica que `parent_id` e `children_ids` formam uma árvore consistente.
+
+Erros causam falha na validação. Warnings são informativos e não afetam `is_valid`.
+
+### Validar conversas e embeddings
+
+```python
+from portable_ai_memory import load_conversation, load_embeddings, load_memory_store
+from portable_ai_memory import validate_conversation, validate_embeddings
+
+# Validação de conversa (verifica DAG de mensagens)
+conv = load_conversation("conversations/conv-001.json")
+result = validate_conversation(conv)
+
+# Validação de embeddings (verifica dimensões, IDs)
+# Opcionalmente passe o memory store para verificações de referência cruzada
+embeddings = load_embeddings("embeddings.json")
+store = load_memory_store("memory-store.json")
+result = validate_embeddings(embeddings, memory_store=store)
+```
+
+---
+
+## Validação manual (sem o SDK)
+
+Se você precisa validar em uma linguagem ainda não coberta por um SDK oficial, pode usar qualquer validador JSON Schema Draft 2020-12 diretamente. A validação manual verifica apenas conformidade de schema — **não** verifica content hashes, referências cruzadas ou consistência temporal.
+
+### Baixar os schemas
 
 ```bash
 # Obrigatório
@@ -18,35 +105,17 @@ curl -O https://portable-ai-memory.org/schemas/portable-ai-memory-conversation.s
 curl -O https://portable-ai-memory.org/schemas/portable-ai-memory-embeddings.schema.json
 ```
 
-## Instalar
-
-<Tabs syncKey="lang">
-    <TabItem label="Python">
-        ```bash
-        pip install jsonschema
-        ```
-    </TabItem>
-    <TabItem label="Node.js">
-        ```bash
-        npm install ajv ajv-formats
-        ```
-
-        Requer `"type": "module"` no `package.json` ou use a extensão de arquivo `.mjs`.
-    </TabItem>
-</Tabs>
-
-## Validar
-
-Os schemas PAM utilizam JSON Schema Draft 2020-12. Ambas as ferramentas abaixo suportam este draft nativamente.
-
 ### Memory store
 
 <Tabs syncKey="lang">
-    <TabItem label="Python">
+    <TabItem label="Python (jsonschema)">
+        ```bash
+        pip install jsonschema
+        ```
+
         ```python
         from jsonschema import Draft202012Validator
-        import json
-        import sys
+        import json, sys
 
         with open("portable-ai-memory.schema.json") as f:
             schema = json.load(f)
@@ -67,7 +136,11 @@ Os schemas PAM utilizam JSON Schema Draft 2020-12. Ambas as ferramentas abaixo s
             sys.exit(1)
         ```
     </TabItem>
-    <TabItem label="Node.js">
+    <TabItem label="Node.js (ajv)">
+        ```bash
+        npm install ajv ajv-formats
+        ```
+
         ```javascript
         import Ajv2020 from "ajv/dist/2020.js";
         import addFormats from "ajv-formats";
@@ -97,111 +170,10 @@ Os schemas PAM utilizam JSON Schema Draft 2020-12. Ambas as ferramentas abaixo s
     </TabItem>
 </Tabs>
 
-### Conversation
+O mesmo padrão se aplica a arquivos de conversa e embeddings — substitua o nome do arquivo de schema e o nome do arquivo de entrada:
 
-<Tabs syncKey="lang">
-    <TabItem label="Python">
-        ```python
-        from jsonschema import Draft202012Validator
-        import json
-        import sys
-
-        with open("portable-ai-memory-conversation.schema.json") as f:
-            schema = json.load(f)
-        with open("conversation.json") as f:
-            data = json.load(f)
-        errors = sorted(
-            Draft202012Validator(schema).iter_errors(data),
-            key=lambda e: list(e.path),
-        )
-
-        if not errors:
-            print("conversation.json valid")
-        else:
-            print(f"conversation.json invalid — {len(errors)} errors")
-            for e in errors:
-                path = "/".join(str(p) for p in e.path) or "(root)"
-                print(f"  {path}: {e.message}")
-            sys.exit(1)
-        ```
-    </TabItem>
-    <TabItem label="Node.js">
-        ```javascript
-        import Ajv2020 from "ajv/dist/2020.js";
-        import addFormats from "ajv-formats";
-        import {readFileSync} from "node:fs";
-
-        const ajv = new Ajv2020({allErrors: true});
-        addFormats(ajv);
-        const schema = JSON.parse(readFileSync("portable-ai-memory-conversation.schema.json", "utf8"));
-        const data = JSON.parse(readFileSync("conversation.json", "utf8"));
-
-        const validate = ajv.compile(schema);
-        if (validate(data)) {
-          console.log("conversation.json valid");
-        } else {
-          console.log(`conversation.json invalid — ${validate.errors.length} errors`);
-          for (const err of validate.errors) {
-            console.log(`  ${err.instancePath || "(root)"}: ${err.message}`);
-          }
-          process.exit(1);
-        }
-        ```
-    </TabItem>
-</Tabs>
-
-### Embeddings
-
-<Tabs syncKey="lang">
-    <TabItem label="Python">
-        ```python
-        from jsonschema import Draft202012Validator
-        import json
-        import sys
-
-        with open("portable-ai-memory-embeddings.schema.json") as f:
-            schema = json.load(f)
-        with open("embeddings.json") as f:
-            data = json.load(f)
-        errors = sorted(
-            Draft202012Validator(schema).iter_errors(data),
-            key=lambda e: list(e.path),
-        )
-
-        if not errors:
-            print("embeddings.json valid")
-        else:
-            print(f"embeddings.json invalid — {len(errors)} errors")
-            for e in errors:
-                path = "/".join(str(p) for p in e.path) or "(root)"
-                print(f"  {path}: {e.message}")
-            sys.exit(1)
-        ```
-    </TabItem>
-    <TabItem label="Node.js">
-        ```javascript
-        import Ajv2020 from "ajv/dist/2020.js";
-        import addFormats from "ajv-formats";
-        import {readFileSync} from "node:fs";
-
-        const ajv = new Ajv2020({allErrors: true});
-        addFormats(ajv);
-        const schema = JSON.parse(readFileSync("portable-ai-memory-embeddings.schema.json", "utf8"));
-        const data = JSON.parse(readFileSync("embeddings.json", "utf8"));
-
-        const validate = ajv.compile(schema);
-        if (validate(data)) {
-          console.log("embeddings.json valid");
-        } else {
-          console.log(`embeddings.json invalid — ${validate.errors.length} errors`);
-          for (const err of validate.errors) {
-            console.log(`  ${err.instancePath || "(root)"}: ${err.message}`);
-          }
-          process.exit(1);
-        }
-        ```
-    </TabItem>
-</Tabs>
+- Conversas: `portable-ai-memory-conversation.schema.json`
+- Embeddings: `portable-ai-memory-embeddings.schema.json`
 
 ## Exemplos de saída
 
@@ -217,5 +189,3 @@ Erro:
 memory-store.json invalid
   memories/0: must have required property 'content_hash'
 ```
-
-A saída de erro mostra o caminho JSON até o campo inválido e qual regra foi violada.

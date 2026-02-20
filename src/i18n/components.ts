@@ -31,14 +31,15 @@ const translations = {
         embeddings: 'Embeddings',
 
         // SdkCards
+        available: 'Available',
         comingSoon: 'Coming soon',
         planned: 'Planned',
-        pythonDesc: 'CLI and library for converting, validating, and reading PAM files',
-        typescriptDesc: 'Node.js package with full PAM support including schema validation',
-        goDesc: 'Native Go module for high-performance PAM processing',
-        rustDesc: 'Zero-copy PAM reader/writer with compile-time schema checks',
-        javaDesc: 'JVM library for enterprise PAM integration',
-        csharpDesc: '.NET library for PAM conversion and validation',
+        pythonDesc: 'Official SDK: CLI and library for converting, validating, and building PAM files',
+        typescriptDesc: 'Node.js package for PAM conversion and validation',
+        goDesc: 'Native Go module for PAM processing',
+        rustDesc: 'PAM reader/writer for Rust',
+        javaDesc: 'JVM library for PAM integration',
+        csharpDesc: '.NET library for PAM support',
 
         // HomepageCards
         providerIntro: 'PAM works with any AI provider or tool via SDK Converters.',
@@ -83,14 +84,15 @@ const translations = {
         embeddings: 'Embeddings',
 
         // SdkCards
+        available: 'Disponível',
         comingSoon: 'Em breve',
         planned: 'Planejado',
-        pythonDesc: 'CLI e biblioteca para converter, validar e ler arquivos PAM',
-        typescriptDesc: 'Pacote Node.js com suporte completo a PAM incluindo validação de schema',
-        goDesc: 'Módulo Go nativo para processamento PAM de alta performance',
-        rustDesc: 'Leitor/escritor PAM zero-copy com verificação de schema em tempo de compilação',
-        javaDesc: 'Biblioteca JVM para integração PAM empresarial',
-        csharpDesc: 'Biblioteca .NET para conversão e validação PAM',
+        pythonDesc: 'SDK oficial: CLI e biblioteca para converter, validar e construir arquivos PAM',
+        typescriptDesc: 'Pacote Node.js para conversão e validação PAM',
+        goDesc: 'Módulo Go nativo para processamento PAM',
+        rustDesc: 'Leitor/escritor PAM para Rust',
+        javaDesc: 'Biblioteca JVM para integração PAM',
+        csharpDesc: 'Biblioteca .NET para suporte PAM',
 
         // HomepageCards
         providerIntro: 'O PAM funciona com qualquer provedor ou ferramenta de IA através dos SDK Converters.',
