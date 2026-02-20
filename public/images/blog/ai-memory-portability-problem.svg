@@ -1,0 +1,153 @@
+<svg viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#6b7280"/>
+    </marker>
+    <marker id="arr-accent" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#3aafa9"/>
+    </marker>
+    <linearGradient id="bg-grad" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1a1d23"/>
+      <stop offset="100%" stop-color="#23262d"/>
+    </linearGradient>
+    <!-- glow removed for cross-platform OG compatibility -->
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg-grad)"/>
+
+  <!-- Subtle grid pattern -->
+  <g opacity="0.04" stroke="#e6edf3" stroke-width="0.5">
+    <line x1="0" y1="105" x2="1200" y2="105"/><line x1="0" y1="210" x2="1200" y2="210"/>
+    <line x1="0" y1="315" x2="1200" y2="315"/><line x1="0" y1="420" x2="1200" y2="420"/>
+    <line x1="0" y1="525" x2="1200" y2="525"/>
+    <line x1="200" y1="0" x2="200" y2="630"/><line x1="400" y1="0" x2="400" y2="630"/>
+    <line x1="600" y1="0" x2="600" y2="630"/><line x1="800" y1="0" x2="800" y2="630"/>
+    <line x1="1000" y1="0" x2="1000" y2="630"/>
+  </g>
+
+  <!-- Title area -->
+  <text x="600" y="72" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif"
+        font-size="28" font-weight="700" fill="#e6edf3">The AI Memory Portability Problem</text>
+  <text x="600" y="102" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif"
+        font-size="14" fill="#9ca3af">Your context is trapped in proprietary silos</text>
+
+  <!-- ==================== LEFT SIDE: Silos ==================== -->
+
+  <!-- ChatGPT silo -->
+  <g>
+    <rect x="60" y="160" width="180" height="120" rx="10" fill="#23262d" stroke="#404552" stroke-width="1.5"/>
+    <!-- Lock icon -->
+    <rect x="139" y="186" width="22" height="16" rx="3" fill="none" stroke="#6b7280" stroke-width="1.5"/>
+    <path d="M144,186 V180 a6,6 0 0 1 12,0 V186" fill="none" stroke="#6b7280" stroke-width="1.5"/>
+    <text x="150" y="222" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif"
+          font-size="15" font-weight="600" fill="#e6edf3">ChatGPT</text>
+    <text x="150" y="242" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif"
+          font-size="10" fill="#9ca3af">Proprietary format</text>
+  </g>
+
+  <!-- Claude silo -->
+  <g>
+    <rect x="60" y="310" width="180" height="120" rx="10" fill="#23262d" stroke="#404552" stroke-width="1.5"/>
+    <rect x="139" y="336" width="22" height="16" rx="3" fill="none" stroke="#6b7280" stroke-width="1.5"/>
+    <path d="M144,336 V330 a6,6 0 0 1 12,0 V336" fill="none" stroke="#6b7280" stroke-width="1.5"/>
+    <text x="150" y="372" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif"
+          font-size="15" font-weight="600" fill="#e6edf3">Claude</text>
+    <text x="150" y="392" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif"
+          font-size="10" fill="#9ca3af">Conversation-derived</text>
+  </g>
+
+  <!-- Gemini silo -->
+  <g>
+    <rect x="60" y="460" width="180" height="120" rx="10" fill="#23262d" stroke="#404552" stroke-width="1.5"/>
+    <rect x="139" y="486" width="22" height="16" rx="3" fill="none" stroke="#6b7280" stroke-width="1.5"/>
+    <path d="M144,486 V480 a6,6 0 0 1 12,0 V486" fill="none" stroke="#6b7280" stroke-width="1.5"/>
+    <text x="150" y="522" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif"
+          font-size="15" font-weight="600" fill="#e6edf3">Gemini</text>
+    <text x="150" y="542" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif"
+          font-size="10" fill="#9ca3af">Internal representation</text>
+  </g>
+
+  <!-- ==================== CENTER: PAM Hub ==================== -->
+  <rect x="440" y="270" width="320" height="160" rx="16" fill="rgba(43,122,120,0.15)" stroke="#3aafa9" stroke-width="2.5"/>
+  <text x="600" y="318" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif"
+        font-size="32" font-weight="700" fill="#3aafa9">PAM</text>
+  <text x="600" y="344" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif"
+        font-size="13" fill="#9ca3af">Portable AI Memory</text>
+
+  <!-- Schema badges inside hub -->
+  <g>
+    <rect x="462" y="362" width="96" height="24" rx="12" fill="rgba(43,122,120,0.18)" stroke="#3aafa9" stroke-width="0.8"/>
+    <text x="510" y="378" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif"
+          font-size="10" font-weight="500" fill="#3aafa9">Memory Store</text>
+  </g>
+  <g>
+    <rect x="568" y="362" width="96" height="24" rx="12" fill="rgba(43,122,120,0.18)" stroke="#3aafa9" stroke-width="0.8"/>
+    <text x="616" y="378" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif"
+          font-size="10" font-weight="500" fill="#3aafa9">Conversation</text>
+  </g>
+  <g>
+    <rect x="674" y="362" width="76" height="24" rx="12" fill="rgba(43,122,120,0.18)" stroke="#3aafa9" stroke-width="0.8"/>
+    <text x="712" y="378" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif"
+          font-size="10" font-weight="500" fill="#3aafa9">Embeddings</text>
+  </g>
+
+  <!-- Spec version + format hint -->
+  <text x="600" y="412" text-anchor="middle" font-family="ui-monospace, monospace"
+        font-size="10" fill="#6b7280">v1.0 — JSON Schema — vendor-neutral</text>
+
+  <!-- ==================== RIGHT SIDE: Destinations ==================== -->
+
+  <!-- Any AI Assistant -->
+  <g>
+    <rect x="900" y="213" width="240" height="56" rx="10" fill="#23262d" stroke="#3aafa9" stroke-width="1" stroke-dasharray="4,3"/>
+    <text x="1020" y="246" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif"
+          font-size="13" font-weight="500" fill="#e6edf3">Any AI Assistant</text>
+  </g>
+
+  <!-- Local LLM -->
+  <g>
+    <rect x="900" y="299" width="240" height="56" rx="10" fill="#23262d" stroke="#3aafa9" stroke-width="1" stroke-dasharray="4,3"/>
+    <text x="1020" y="332" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif"
+          font-size="13" font-weight="500" fill="#e6edf3">Local LLM</text>
+  </g>
+
+  <!-- Custom Tools -->
+  <g>
+    <rect x="900" y="385" width="240" height="56" rx="10" fill="#23262d" stroke="#3aafa9" stroke-width="1" stroke-dasharray="4,3"/>
+    <text x="1020" y="418" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif"
+          font-size="13" font-weight="500" fill="#e6edf3">Custom Tools &amp; Agents</text>
+  </g>
+
+  <!-- Backup / Archive -->
+  <g>
+    <rect x="900" y="471" width="240" height="56" rx="10" fill="#23262d" stroke="#3aafa9" stroke-width="1" stroke-dasharray="4,3"/>
+    <text x="1020" y="504" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif"
+          font-size="13" font-weight="500" fill="#e6edf3">Backup / Archive</text>
+  </g>
+
+  <!-- ==================== Arrows: Silos → PAM ==================== -->
+  <!-- ChatGPT → PAM -->
+  <path d="M240,220 C340,220 360,310 440,320" fill="none" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- Claude → PAM -->
+  <path d="M240,370 C340,370 360,355 440,350" fill="none" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- Gemini → PAM -->
+  <path d="M240,520 C340,520 360,390 440,380" fill="none" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Labels on left arrows (removed - too small for OG preview) -->
+
+  <!-- ==================== Arrows: PAM → Destinations ==================== -->
+  <!-- PAM → Any AI -->
+  <path d="M760,310 C830,310 850,241 900,241" fill="none" stroke="#3aafa9" stroke-width="1.5" marker-end="url(#arr-accent)"/>
+  <!-- PAM → Local LLM -->
+  <path d="M760,330 C830,330 850,327 900,327" fill="none" stroke="#3aafa9" stroke-width="1.5" marker-end="url(#arr-accent)"/>
+  <!-- PAM → Custom Tools -->
+  <path d="M760,370 C830,370 850,413 900,413" fill="none" stroke="#3aafa9" stroke-width="1.5" marker-end="url(#arr-accent)"/>
+  <!-- PAM → Backup -->
+  <path d="M760,390 C830,390 850,499 900,499" fill="none" stroke="#3aafa9" stroke-width="1.5" marker-end="url(#arr-accent)"/>
+
+  <!-- ==================== Bottom: portable-ai-memory.org ==================== -->
+  <text x="600" y="608" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif"
+        font-size="13" fill="#6b7280">portable-ai-memory.org</text>
+
+</svg>
