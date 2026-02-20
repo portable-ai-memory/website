@@ -83,4 +83,11 @@ export const sidebar = [
             {label: 'License', translations: {'pt-BR': 'Licença'}, slug: 'governance/license'},
         ],
     },
+    {
+        label: 'Blog',
+        translations: {'pt-BR': 'Blog'},
+        items: [
+            {label: 'The AI Memory Portability Problem', translations: {'pt-BR': 'O Problema da Portabilidade de Memória IA'}, slug: 'blog/ai-memory-portability-problem'},
+        ],
+    },
 ];
