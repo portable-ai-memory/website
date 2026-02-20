@@ -7,10 +7,10 @@ description: Valide seu primeiro arquivo PAM em três etapas
 
 import {TabItem, Tabs} from '@astrojs/starlight/components';
 
-## 1. Baixe o schema
+## 1. Instale o SDK PAM
 
 ```bash
-curl -O https://portable-ai-memory.org/schemas/portable-ai-memory.schema.json
+pip install 'portable-ai-memory[cli]'
 ```
 
 ## 2. Crie um memory store mínimo
@@ -44,56 +44,39 @@ Salve isso como `memory-store.json`:
 
 ## 3. Valide
 
-<Tabs syncKey="lang">
-    <TabItem label="Python">
-        ```python
-        from jsonschema import Draft202012Validator
-        import json
+**CLI** — o caminho mais rápido:
 
-        with open("portable-ai-memory.schema.json") as f:
-            schema = json.load(f)
-        with open("memory-store.json") as f:
-            data = json.load(f)
-        errors = list(Draft202012Validator(schema).iter_errors(data))
+```bash
+pam validate memory-store.json
+```
 
-        if not errors:
-            print("memory-store.json valid")
-        else:
-            for e in errors:
-                print(e.message)
-        ```
+**Python** — para validação programática:
 
-        Instale: `pip install jsonschema`
-    </TabItem>
-    <TabItem label="Node.js">
-        ```javascript
-        import Ajv2020 from "ajv/dist/2020.js";
-        import {readFileSync} from "node:fs";
+```python
+from portable_ai_memory import load, validate_memory_store
 
-        const ajv = new Ajv2020({allErrors: true});
-        const schema = JSON.parse(readFileSync("portable-ai-memory.schema.json", "utf8"));
-        const data = JSON.parse(readFileSync("memory-store.json", "utf8"));
+store = load("memory-store.json")
+result = validate_memory_store(store)
 
-        const validate = ajv.compile(schema);
-        if (validate(data)) {
-          console.log("memory-store.json valid");
-        } else {
-          for (const err of validate.errors) {
-            console.log(err.message);
-          }
-        }
-        ```
-
-        Instale: `npm install ajv`
-
-        Requer `"type": "module"` no `package.json` ou use extensão `.mjs`.
-    </TabItem>
-</Tabs>
+if result.is_valid:
+    print(f"Válido — {len(store.memories)} memórias")
+else:
+    for issue in result.errors:
+        print(issue)
+```
 
 Se o arquivo for válido, você verá:
 
 ```
-memory-store.json valid
+✓ All checks passed
 ```
 
 É isso — você tem um arquivo PAM válido. Consulte os [Exemplos](/pt-br/examples/overview/) para cenários mais complexos, ou leia a [Especificação](/pt-br/spec/v1.0/) completa.
+
+---
+
+### Validar sem o SDK
+
+Se você não pode usar Python, é possível validar diretamente contra os JSON Schemas com qualquer validador JSON Schema Draft 2020-12. Consulte o [Guia de Validação](/pt-br/tools/validation-guide/) para exemplos com `jsonschema` (Python) e `ajv` (Node.js).
+
+A validação manual verifica apenas conformidade de schema — não verifica content hashes, referências cruzadas ou consistência temporal.

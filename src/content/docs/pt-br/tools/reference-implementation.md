@@ -3,22 +3,29 @@ title: Implementação de Referência
 description: Visão geral da implementação de referência do PAM e suas funcionalidades
 ---
 
-:::caution[Em breve]
-A implementação de referência do PAM está em desenvolvimento.
-:::
+A implementação de referência do PAM é distribuída como **SDKs específicos por linguagem**. O [SDK Python](https://github.com/portable-ai-memory/python-sdk) é o primeiro release oficial. Cada SDK oferece as funcionalidades definidas na [spec §23](/pt-br/spec/v1.0/#23-reference-implementation):
 
-A implementação de referência do PAM é distribuída como **SDKs específicos por linguagem**. Cada SDK oferece as cinco funcionalidades definidas na [spec §23](/pt-br/spec/v1.0/#23-reference-implementation):
+## Funcionalidades disponíveis
 
-## Funcionalidades
+1. **Extratores de plataforma** — Processam exportações do ChatGPT, Claude, Gemini, Copilot e Grok para o formato PAM. Detectam automaticamente o formato de exportação do provedor e mapeiam os campos para o schema PAM.
 
-1. **Extratores de plataforma** — Processam exportações do ChatGPT, Claude, Gemini, Copilot e Grok para o formato PAM. Esses extratores detectam automaticamente o formato de exportação do provedor e mapeiam os campos para o schema PAM.
+2. **Conversor** — Converte exportações de provedores para bundles PAM com `pam convert`. Gera memory stores válidos e em conformidade com o schema, com content hashes calculados e arquivos de conversas complementares. Consulte [SDK Converters](/pt-br/tools/converters/) para detalhes.
 
-2. **Conversor** — Converte exportações de provedores para o formato PAM com detecção automática. A ferramenta CLI `pam convert` processa exportações e gera memory stores PAM válidos, em conformidade com o schema e com content hashes calculados. Consulte [Converters](/pt-br/tools/converters/) para os SDKs disponíveis, uso da CLI e detalhes da API programática.
+3. **Validador** — Validação profunda com `pam validate` — vai além da verificação de schema para verificar content hashes, referências cruzadas, ordenação temporal e blocos de integridade. Consulte o [Guia de Validação](/pt-br/tools/validation-guide/) para detalhes.
 
-3. **Validador** — Validação de schema usando o comando CLI `pam validate` para verificar se os memory stores estão em conformidade com os schemas PAM. Consulte o [Guia de Validação](/pt-br/tools/validation-guide/) para detalhes abrangentes sobre validação e regras.
+4. **Verificador de integridade** — Verifica checksums e regras de consistência (normalização de content hashes, checksums do bloco de integridade, unicidade de IDs). Executa automaticamente como parte de `pam validate --deep` (habilitado por padrão).
 
-4. **Verificador de integridade** — Verifica checksums e regras de consistência para garantir que os memory stores mantenham a integridade dos dados e estejam em conformidade com todos os requisitos de normalização. Consulte [Integridade e Assinaturas](/pt-br/interop/integrity/) para detalhes sobre validação, verificação e checagens de consistência.
+5. **Inspetor** — Inspeciona arquivos PAM com `pam inspect` para obter um resumo do conteúdo (contagem de memórias por tipo, relações, índice de conversas, status de integridade).
 
-5. **Ferramentas de assinatura** — Assina e verifica exportações com os comandos `pam sign` e `pam verify` para autenticar e garantir a autenticidade dos memory stores. Consulte [Integridade e Assinaturas](/pt-br/interop/integrity/) para detalhes sobre assinatura criptográfica.
+## Funcionalidades planejadas
 
-O SDK Python é a primeira implementação de referência e servirá como exemplo canônico do tratamento correto do PAM.
+- **Ferramentas de assinatura** — Assinar e verificar exportações para autenticação e detecção de adulteração. Definido na [spec §23](/pt-br/spec/v1.0/#23-reference-implementation) mas ainda não implementado.
+
+## Instalação
+
+```bash
+pip install portable-ai-memory        # SDK core
+pip install 'portable-ai-memory[cli]' # + CLI (comando pam)
+```
+
+O [SDK Python](https://github.com/portable-ai-memory/python-sdk) serve como exemplo canônico do tratamento correto do PAM.

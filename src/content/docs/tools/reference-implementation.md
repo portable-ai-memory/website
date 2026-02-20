@@ -3,23 +3,29 @@ title: Reference Implementation
 description: Overview of the PAM reference implementation and its capabilities
 ---
 
-:::caution[Coming Soon]
-The PAM reference implementation is under development.
-:::
+The PAM reference implementation is delivered as **language-specific SDKs**. The [Python SDK](https://github.com/portable-ai-memory/python-sdk) is the first official release. Each SDK provides the capabilities defined in [spec §23](/spec/v1.0/#23-reference-implementation):
 
-The PAM reference implementation is delivered as **language-specific SDKs**. Each SDK provides the five capabilities
-defined in [spec §23](/spec/v1.0/#23-reference-implementation):
+## Available capabilities
 
-## Capabilities
+1. **Platform extractors** — Parse exports from ChatGPT, Claude, Gemini, Copilot, and Grok into PAM format. Auto-detect the provider's export format and map fields to the PAM schema.
 
-1. **Platform extractors** — Parse exports from ChatGPT, Claude, Gemini, Copilot, and Grok into PAM format. These extractors auto-detect the provider's export format and map fields to the PAM schema.
+2. **Converter** — Convert provider exports to PAM bundles with `pam convert`. Outputs valid, schema-compliant memory stores with computed content hashes and companion conversation files. See [SDK Converters](/tools/converters/) for details.
 
-2. **Converter** — Convert provider exports to PAM format with auto-detection. The `pam convert` CLI tool processes exports and outputs valid, schema-compliant PAM memory stores with computed content hashes. See [Converters](/tools/converters/) for available SDKs, CLI usage, and programmatic API details.
+3. **Validator** — Deep validation with `pam validate` — goes beyond schema checks to verify content hashes, cross-references, temporal ordering, and integrity blocks. See [Validation Guide](/tools/validation-guide/) for details.
 
-3. **Validator** — Schema validation using the `pam validate` CLI command to verify memory stores conform to PAM schemas. See [Validation Guide](/tools/validation-guide/) for comprehensive validation details and rules.
+4. **Integrity checker** — Verify checksums and consistency rules (content hash normalization, integrity block checksums, ID uniqueness). Runs automatically as part of `pam validate --deep` (enabled by default).
 
-4. **Integrity checker** — Verify checksums and consistency rules to ensure memory stores maintain data integrity and conform to all normalization requirements. See [Integrity & Signatures](/interop/integrity/) for details on validation, verification, and consistency checks.
+5. **Inspector** — Inspect PAM files with `pam inspect` to get a summary of contents (memory counts by type, relations, conversations index, integrity status).
 
-5. **Signature tools** — Sign and verify exports with `pam sign` and `pam verify` commands to authenticate and ensure the authenticity of memory stores. See [Integrity & Signatures](/interop/integrity/) for cryptographic signing details.
+## Planned capabilities
 
-The Python SDK is the first reference implementation and will serve as the canonical example of correct PAM handling.
+- **Signature tools** — Sign and verify exports for authentication and tamper detection. Defined in [spec §23](/spec/v1.0/#23-reference-implementation) but not yet implemented.
+
+## Install
+
+```bash
+pip install portable-ai-memory        # core SDK
+pip install 'portable-ai-memory[cli]' # + CLI (pam command)
+```
+
+The [Python SDK](https://github.com/portable-ai-memory/python-sdk) serves as the canonical example of correct PAM handling.
