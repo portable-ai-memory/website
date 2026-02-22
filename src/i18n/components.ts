@@ -108,6 +108,59 @@ const translations = {
         examplesDescription: 'Do mínimo ao completo',
         quickStartDescription: 'Valide seu primeiro arquivo PAM',
     },
+    fr: {
+        // SolutionDiagram
+        solutionAriaLabel: 'Diagramme montrant PAM comme hub universel : les fournisseurs d\'IA à gauche exportent vers le format PAM au centre, qui importe ensuite vers n\'importe quelle destination à droite.',
+        universalFormat: 'Format Universel',
+        anyAiAssistant: 'N\'importe quelle IA',
+        localLlm: 'LLM Local',
+        customTools: 'Outils Personnalisés',
+        backupArchive: 'Sauvegarde / Archive',
+
+        // HowItWorksDiagram
+        howItWorksAriaLabel: 'Diagramme en 4 étapes : Exportez vos données, Convertissez en PAM, Votre fichier PAM, Importez n\'importe où.',
+        step1Title: 'Exportez vos données',
+        step1Desc: 'Téléchargez depuis votre fournisseur d\'IA',
+        step2Title: 'Convertissez en PAM',
+        step2Desc: 'Le SDK Converter transforme le format',
+        step3Title: 'Votre fichier PAM',
+        step3Desc: 'JSON standard — inspectez, éditez, sauvegardez',
+        step4Title: 'Importez n\'importe où',
+        step4Desc: 'Chargez dans n\'importe quel outil d\'IA compatible',
+
+        // SchemaArchitectureDiagram
+        schemaAriaLabel: 'Diagramme de l\'architecture des schémas PAM : Memory Store comme fichier central requis, avec les fichiers compagnons optionnels Conversations et Embeddings connectés via conversations_index et embedding_ref.',
+        required: 'Requis',
+        optional: 'Optionnel',
+        memoryStore: 'Memory Store',
+        conversations: 'Conversations',
+        embeddings: 'Embeddings',
+
+        // SdkCards
+        available: 'Disponible',
+        comingSoon: 'Bientôt disponible',
+        planned: 'Planifié',
+        pythonDesc: 'SDK officiel : CLI et bibliothèque pour convertir, valider et construire des fichiers PAM',
+        typescriptDesc: 'Package Node.js pour la conversion et la validation PAM',
+        goDesc: 'Module Go natif pour le traitement PAM',
+        rustDesc: 'Lecteur/écrivain PAM pour Rust',
+        javaDesc: 'Bibliothèque JVM pour l\'intégration PAM',
+        csharpDesc: 'Bibliothèque .NET pour le support PAM',
+
+        // HomepageCards
+        providerIntro: 'PAM fonctionne avec n\'importe quel fournisseur ou outil d\'IA via les SDK Converters.',
+        providerDisclaimer: 'Basé sur les formats d\'exportation observés. Les fournisseurs ne prennent pas en charge PAM nativement. Convertisseurs disponibles via le SDK.',
+        officialBadge: 'Officiel',
+        browseProviders: 'Voir les Fournisseurs',
+        readSpec: 'Lire la Spec',
+        viewSchema: 'Voir le Schéma',
+        seeExamples: 'Voir les Exemples',
+        quickStart: 'Commencer',
+        specDescription: 'Spécification technique complète v1.0',
+        schemaDescription: 'JSON Schema Draft 2020-12',
+        examplesDescription: 'Du minimal au complet',
+        quickStartDescription: 'Validez votre premier fichier PAM',
+    },
 } as const;
 
 export type TranslationKeys = keyof typeof translations[''];
