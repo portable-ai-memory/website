@@ -1,0 +1,21 @@
+{
+  "name": "Portable AI Memory",
+  "short_name": "PAM",
+  "description": "Open interchange format for AI user memory",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#0a1a1a",
+  "theme_color": "#3aafa9",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

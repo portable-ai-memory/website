@@ -71,6 +71,15 @@ src/
 └── styles/                # Custom CSS (design tokens in custom.css)
 public/
 ├── schemas/               # JSON Schema files (synced from content-source)
+├── images/blog/           # Blog post images
+├── og-image.png           # Open Graph social preview (1280×640)
+├── favicon.svg            # SVG favicon (adapts to light/dark mode)
+├── favicon-32x32.png      # PNG favicon 32×32
+├── favicon-16x16.png      # PNG favicon 16×16
+├── apple-touch-icon.png   # iOS home screen icon (180×180)
+├── icon-192.png           # PWA icon (192×192)
+├── icon-512.png           # PWA icon / splash (512×512)
+├── site.webmanifest       # PWA web app manifest
 ├── _headers               # Cloudflare Pages security headers
 └── _redirects             # Cloudflare Pages redirects
 scripts/
