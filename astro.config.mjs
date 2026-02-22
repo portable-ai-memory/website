@@ -61,6 +61,10 @@ export default defineConfig({
                     label: 'Português (Brasil)',
                     lang: 'pt-BR',
                 },
+                fr: {
+                    label: 'Français',
+                    lang: 'fr',
+                },
             },
             social: [
                 {
